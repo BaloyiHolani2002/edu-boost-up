@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edu Boost Up - Empowering Your Academic Journey</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #7209b7;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --math: #ff6b6b;
+            --accounting: #4ecdc4;
+            --science: #45aaf2;
+        }
+
+        body {
+            background-color: #f5f7fb;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 1.5rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem 0.8rem;
+            border-radius: 4px;
+        }
+
+        nav a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #5a08a0;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-outline:hover {
+            background-color: white;
+            color: var(--primary);
+        }
+
+        .btn-large {
+            padding: 0.8rem 2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 5rem 0;
+            background: linear-gradient(rgba(67, 97, 238, 0.9), rgba(58, 12, 163, 0.9)), url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+        }
+
+        .hero h2 {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+        }
+
+        .trial-badge {
+            display: inline-block;
+            background-color: var(--warning);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Video Section */
+        .video-section {
+            padding: 5rem 0;
+            background-color: var(--light);
+        }
+
+        .video-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            transform: translateY(0);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .video-wrapper:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .video-wrapper video {
+            width: 100%;
+            display: block;
+            border-radius: 15px;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+            border-radius: 15px;
+        }
+
+        .video-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .play-button {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .play-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .social-share {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-btn.facebook { background: #3b5998; }
+        .social-btn.twitter { background: #1da1f2; }
+        .social-btn.linkedin { background: #0077b5; }
+        .social-btn.whatsapp { background: #25d366; }
+
+        .social-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Pricing Section */
+        .pricing {
+            padding: 5rem 0;
+            text-align: center;
+        }
+
+        .pricing-card {
+            background: white;
+            border-radius: 15px;
+            padding: 3rem 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid var(--primary);
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: 20px;
+            right: -30px;
+            background-color: var(--warning);
+            color: white;
+            padding: 0.5rem 2rem;
+            transform: rotate(45deg);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .price {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 1rem 0;
+        }
+
+        .price span {
+            font-size: 1.5rem;
+            color: #6c757d;
+        }
+
+        .price-details {
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .price-details li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .price-details li:last-child {
+            border-bottom: none;
+        }
+
+        .price-details i {
+            color: var(--success);
+            font-size: 1.2rem;
+        }
+
+        /* Features Section */
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.2rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+
+        .section-title p {
+            color: #6c757d;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .features {
+            padding: 5rem 0;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: white;
+            font-size: 2rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--secondary);
+        }
+
+        /* Subjects Section */
+        .subjects {
+            padding: 5rem 0;
+            background-color: var(--light);
+        }
+
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .subject-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-8px);
+        }
+
+        .subject-header {
+            padding: 2rem;
+            color: white;
+            text-align: center;
+        }
+
+        .math {
+            background: linear-gradient(135deg, var(--math), #ff8e8e);
+        }
+
+        .accounting {
+            background: linear-gradient(135deg, var(--accounting), #7ae0da);
+        }
+
+        .science {
+            background: linear-gradient(135deg, var(--science), #6bb9ff);
+        }
+
+        .subject-header i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .subject-content {
+            padding: 2rem;
+        }
+
+        .subject-content ul {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .subject-content li {
+            padding: 0.7rem 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .subject-content li:before {
+            content: "✓";
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .subject-content li:last-child {
+            border-bottom: none;
+        }
+
+        /* User Types Section */
+        .user-types {
+            padding: 5rem 0;
+        }
+
+        .user-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .user-tab {
+            padding: 1rem 2rem;
+            background: white;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 2px solid transparent;
+        }
+
+        .user-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .user-tab:hover:not(.active) {
+            border-color: var(--primary);
+        }
+
+        .user-content {
+            background: white;
+            border-radius: 15px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
+        }
+
+        .user-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .user-feature {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .user-feature i {
+            background: var(--light);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            flex-shrink: 0;
+            font-size: 1.2rem;
+        }
+
+        /* Tech Stack Section */
+        .tech-stack {
+            padding: 5rem 0;
+            background-color: var(--light);
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .tech-item {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+
+        .tech-item:hover {
+            transform: translateY(-8px);
+        }
+
+        .tech-item i {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: 5rem 0;
+            background: linear-gradient(135deg, var(--accent), var(--secondary));
+            color: white;
+            text-align: center;
+        }
+
+        .cta h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 3rem 0 1.5rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-column h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--primary);
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-column a {
+            color: #adb5bd;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-column a:hover {
+            color: white;
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid #495057;
+            color: #adb5bd;
+            font-size: 0.9rem;
+        }
+
+        .staff-login {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #495057;
+        }
+
+        .staff-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .staff-link {
+            color: #adb5bd;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .staff-link:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .hero h2 {
+                font-size: 2.2rem;
+            }
+
+            .user-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .user-tab {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .price {
+                font-size: 2.5rem;
+            }
+
+            .play-button {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+            }
+
+            .staff-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h1>Edu Boost Up</h1>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="#video">Video</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#subjects">Subjects</a></li>
+                    </ul>
+                </nav>
+                <div class="auth-buttons">
+                    <a href="/login" class="btn btn-outline">Log In</a>
+                    <a href="/signup" class="btn btn-primary">Sign Up Free</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="trial-badge">
+                <i class="fas fa-star"></i> 20 DAYS FREE TRIAL
+            </div>
+            <h2>Empowering Grade 10-12 Students to Excel</h2>
+            <p>Access quality learning materials, request extra classes, and get personalized support in Mathematics, Accounting, and Physical Science.</p>
+            <a href="/signup" class="btn btn-primary btn-large">Start Your Free Trial</a>
+        </div>
+    </section>
+
+    <!-- Video Section -->
+    <section class="video-section" id="video">
+        <div class="container">
+            <div class="section-title">
+                <h2>See Edu Boost Up in Action</h2>
+                <p>Watch how our platform helps students improve their academic performance</p>
+            </div>
+            <div class="video-container">
+                <div class="video-wrapper">
+                    <video id="promo-video" poster="https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80">
+                        <source src="https://assets.mixkit.co/videos/preview/mixkit-group-of-students-studying-online-46407-large.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="video-overlay" id="video-overlay">
+                        <div class="play-button" id="play-button">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                </div>
+                <p>Experience how Edu Boost Up transforms learning for high school students</p>
+                
+                <!-- Social Media Share -->
+                <div class="social-share">
+                    <a href="#" class="social-btn facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="social-btn linkedin">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="#" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <div class="section-title">
+                <h2>Simple, Affordable Pricing</h2>
+                <p>Start with a 20-day free trial, then continue for only R60 per month</p>
+            </div>
+            <div class="pricing-card">
+                <div class="pricing-badge">POPULAR</div>
+                <h3>Student Premium</h3>
+                <div class="price">R60<span>/month</span></div>
+                <p>After 20-day free trial • Cancel anytime</p>
+                
+                <ul class="price-details">
+                    <li><i class="fas fa-check"></i> Full access to all subjects</li>
+                    <li><i class="fas fa-check"></i> Request extra classes</li>
+                    <li><i class="fas fa-check"></i> Download learning materials</li>
+                    <li><i class="fas fa-check"></i> Mentor support</li>
+                    <li><i class="fas fa-check"></i> Progress tracking</li>
+                </ul>
+                
+                <a href="/signup" class="btn btn-primary btn-large">Start Free Trial</a>
+            </div>
+        </div>
+    </section>
+
+   
+    <!-- Subjects Section -->
+    <section class="subjects" id="subjects">
+        <div class="container">
+            <div class="section-title">
+                <h2>Our Subjects</h2>
+                <p>Specialized support for Grade 10, 11, and 12 students in key academic subjects.</p>
+            </div>
+            <div class="subjects-grid">
+                <div class="subject-card">
+                    <div class="subject-header math">
+                        <i class="fas fa-calculator"></i>
+                        <h3>Mathematics</h3>
+                    </div>
+                    <div class="subject-content">
+                        <p>Master complex concepts with step-by-step explanations and practice problems.</p>
+                        <ul>
+                            <li>Algebra & Functions</li>
+                            <li>Calculus & Trigonometry</li>
+                            <li>Geometry & Statistics</li>
+                            <li>Exam Preparation</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="subject-card">
+                    <div class="subject-header accounting">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        <h3>Accounting</h3>
+                    </div>
+                    <div class="subject-content">
+                        <p>Understand financial principles and accounting practices with real-world examples.</p>
+                        <ul>
+                            <li>Financial Statements</li>
+                            <li>Managerial Accounting</li>
+                            <li>Tax Principles</li>
+                            <li>Budgeting & Forecasting</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="subject-card">
+                    <div class="subject-header science">
+                        <i class="fas fa-atom"></i>
+                        <h3>Physical Science</h3>
+                    </div>
+                    <div class="subject-content">
+                        <p>Explore physics and chemistry concepts through interactive lessons and experiments.</p>
+                        <ul>
+                            <li>Mechanics & Motion</li>
+                            <li>Electricity & Magnetism</li>
+                            <li>Chemical Reactions</li>
+                            <li>Laboratory Skills</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+  
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to Boost Your Academic Performance?</h2>
+            <p>Join thousands of students who are already improving their grades with Edu Boost Up. Start your 20-day free trial today!</p>
+            <a href="/signup" class="btn btn-outline btn-large">Start Free Trial</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>Edu Boost Up</h3>
+                    <p>Empowering Grade 10-12 students with quality educational resources and personalized support.</p>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#video">Video</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#subjects">Subjects</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact</h3>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> info@eduboostup.com</li>
+                        <li><i class="fas fa-phone"></i> +1 (555) 123-4567</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Cape Town, South Africa</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Staff Login Links -->
+            <div class="staff-login">
+                <p style="color: #adb5bd; font-size: 0.9rem; margin-bottom: 1rem;">Staff Access</p>
+                <div class="staff-links">
+                    <a href="/mentor-login" class="staff-link">
+                        <i class="fas fa-chalkboard-teacher"></i> Mentor Login
+                    </a>
+                    <a href="/admin-login" class="staff-link">
+                        <i class="fas fa-user-shield"></i> Admin Login
+                    </a>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2025 Edu Boost Up. All rights reserved. | Learn, grow, and rise — Edu Boost Up empowers your academic journey.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Tab functionality for user types
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.user-tab');
+            const studentContent = document.getElementById('student-content');
+            
+            // Create mentor and admin content
+            const mentorContent = document.createElement('div');
+            mentorContent.className = 'user-features';
+            mentorContent.innerHTML = `
+                <div class="user-feature">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <div>
+                        <h4>Upload Content</h4>
+                        <p>Share educational materials, slides, and notes with students.</p>
+                    </div>
+                </div>
+                <div class="user-feature">
+                    <i class="fas fa-calendar-plus"></i>
+                    <div>
+                        <h4>Schedule Classes</h4>
+                        <p>Post new class sessions and manage your teaching schedule.</p>
+                    </div>
+                </div>
+                <div class="user-feature">
+                    <i class="fas fa-comments"></i>
+                    <div>
+                        <h4>Respond to Requests</h4>
+                        <p>Help students by addressing their specific learning needs.</p>
+                    </div>
+                </div>
+                <div class="user-feature">
+                    <i class="fas fa-chart-line"></i>
+                    <div>
+                        <h4>Track Progress</h4>
+                        <p>Monitor student engagement and performance in your subjects.</p>
+                    </div>
+                </div>
+            `;
+            
+            const adminContent = document.createElement('div');
+            adminContent.className = 'user-features';
+            adminContent.innerHTML = `
+                <div class="user-feature">
+                    <i class="fas fa-users-cog"></i>
+                    <div>
+                        <h4>Manage Accounts</h4>
+                        <p>Oversee student and mentor accounts and permissions.</p>
+                    </div>
+                </div>
+                <div class="user-feature">
+                    <i class="fas fa-file-check"></i>
+                    <div>
+                        <h4>Approve Content</h4>
+                        <p>Review and approve educational materials before publication.</p>
+                    </div>
+                </div>
+                <div class="user-feature">
+                    <i class="fas fa-chart-bar"></i>
+                    <div>
+                        <h4>Monitor Activity</h4>
+                        <p>Track platform usage and generate performance reports.</p>
+                    </div>
+                </div>
+                <div class="user-feature">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <div>
+                        <h4>Manage Billing</h4>
+                        <p>Handle subscription payments and financial operations.</p>
+                    </div>
+                </div>
+            `;
+            
+            const userContent = document.querySelector('.user-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Update content based on selected tab
+                    const tabType = this.getAttribute('data-tab');
+                    
+                    // Remove existing content
+                    while (userContent.firstChild) {
+                        userContent.removeChild(userContent.firstChild);
+                    }
+                    
+                    // Add appropriate content
+                    if (tabType === 'student') {
+                        userContent.appendChild(studentContent);
+                    } else if (tabType === 'mentor') {
+                        userContent.appendChild(mentorContent);
+                    } else if (tabType === 'admin') {
+                        userContent.appendChild(adminContent);
+                    }
+                });
+            });
+            
+            // Video play functionality
+            const video = document.getElementById('promo-video');
+            const videoOverlay = document.getElementById('video-overlay');
+            const playButton = document.getElementById('play-button');
+            
+            playButton.addEventListener('click', function() {
+                video.play();
+                videoOverlay.classList.add('hidden');
+            });
+            
+            video.addEventListener('click', function() {
+                if (video.paused) {
+                    video.play();
+                    videoOverlay.classList.add('hidden');
+                } else {
+                    video.pause();
+                    videoOverlay.classList.remove('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Edu Boost Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gradient: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        body {
+            background: linear-gradient(-45deg, #6366f1, #8b5cf6, #ec4899, #f59e0b);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            min-height: 100vh;
+            padding: 1rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .floating-shapes {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) {
+            width: 60px;
+            height: 60px;
+            top: 15%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 80px;
+            height: 80px;
+            top: 75%;
+            left: 85%;
+            animation-delay: 2s;
+        }
+
+        .shape:nth-child(3) {
+            width: 40px;
+            height: 40px;
+            top: 25%;
+            left: 90%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--glass-border);
+            height: fit-content;
+            position: sticky;
+            top: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .logo h1 {
+            font-size: 1.4rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }
+
+        .nav-menu {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            color: #64748b;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        .nav-link.active {
+            font-weight: 600;
+        }
+
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(99, 102, 241, 0.05);
+            border-radius: 15px;
+            margin-top: auto;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .user-info h3 {
+            font-size: 0.9rem;
+            color: var(--dark);
+            margin-bottom: 0.2rem;
+        }
+
+        .user-info p {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .welcome-message h2 {
+            color: var(--dark);
+            font-size: 1.5rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .welcome-message p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .notification-btn, .logout-btn, .help-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+        }
+
+        .notification-btn:hover, .logout-btn:hover, .help-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Demo Video Guide */
+        .demo-guide {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--glass-border);
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .demo-guide.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .guide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .guide-header h2 {
+            color: var(--dark);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .guide-header h2 i {
+            color: var(--primary);
+        }
+
+        .close-guide {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-guide:hover {
+            color: var(--error);
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            background: #000;
+        }
+
+        .video-placeholder {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(45deg, #1e293b, #334155);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            position: relative;
+        }
+
+        .play-button {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .play-button:hover {
+            transform: scale(1.1);
+        }
+
+        .video-placeholder h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .video-placeholder p {
+            color: #cbd5e1;
+            text-align: center;
+            max-width: 500px;
+            line-height: 1.6;
+        }
+
+        /* Mentor Profiles Section */
+        .mentors-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header h2 {
+            color: var(--dark);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .section-header h2 i {
+            color: var(--primary);
+        }
+
+        .mentors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .mentor-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mentor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .mentor-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .mentor-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .mentor-info h3 {
+            font-size: 1.1rem;
+            color: var(--dark);
+            margin-bottom: 0.3rem;
+        }
+
+        .mentor-info p {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 0.3rem;
+        }
+
+        .mentor-rating {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .mentor-rating i {
+            color: var(--warning);
+            font-size: 0.8rem;
+        }
+
+        .mentor-rating span {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-left: 0.3rem;
+        }
+
+        .mentor-subjects {
+            margin-bottom: 1.5rem;
+        }
+
+        .mentor-subjects h4 {
+            font-size: 0.9rem;
+            color: var(--dark);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .mentor-subjects h4 i {
+            color: var(--primary);
+        }
+
+        .subject-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .subject-tag {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .mentor-bio {
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .mentor-bio p {
+            font-size: 0.85rem;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .mentor-actions {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .get-lesson-btn {
+            flex: 1;
+            padding: 0.9rem 1rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: var(--gradient);
+            color: white;
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .get-lesson-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Dashboard Cards */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .card-icon.math {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        .card-icon.science {
+            background: rgba(236, 72, 153, 0.1);
+            color: var(--accent);
+        }
+
+        .card-icon.english {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .card-icon.history {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .progress-container {
+            margin-bottom: 1rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-fill.math {
+            background: var(--primary);
+            width: 75%;
+        }
+
+        .progress-fill.science {
+            background: var(--accent);
+            width: 60%;
+        }
+
+        .progress-fill.english {
+            background: var(--warning);
+            width: 85%;
+        }
+
+        .progress-fill.history {
+            background: var(--success);
+            width: 70%;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-card {
+            background: rgba(99, 102, 241, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        /* Upcoming Classes */
+        .classes-list {
+            list-style: none;
+        }
+
+        .class-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .class-item:last-child {
+            border-bottom: none;
+        }
+
+        .class-time {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            padding: 0.5rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .class-info h4 {
+            font-size: 0.9rem;
+            color: var(--dark);
+            margin-bottom: 0.2rem;
+        }
+
+        .class-info p {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        /* Recent Activity */
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .activity-icon.completed {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .activity-icon.assignment {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .activity-icon.quiz {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        .activity-details h4 {
+            font-size: 0.9rem;
+            color: var(--dark);
+            margin-bottom: 0.2rem;
+        }
+
+        .activity-details p {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .activity-time {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.3rem;
+        }
+
+        /* Lesson Booking Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--gradient);
+            border-radius: 20px 20px 0 0;
+            color: white;
+        }
+
+        .modal-header h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-content {
+            padding: 2rem;
+        }
+
+        .mentor-info-modal {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .modal-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .modal-mentor-details h3 {
+            font-size: 1.2rem;
+            color: var(--dark);
+            margin-bottom: 0.3rem;
+        }
+
+        .modal-mentor-details p {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+
+        .form-group select, .form-group input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group select:focus, .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.9rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 0.9rem;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: static;
+                margin-bottom: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            
+            .header-actions {
+                align-self: flex-end;
+            }
+            
+            .mentors-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .video-placeholder {
+                height: 300px;
+            }
+            
+            .modal {
+                width: 95%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h1>Edu Boost Up</h1>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active">
+                        <i class="fas fa-home"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-book-open"></i>
+                        My Courses
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-tasks"></i>
+                        Assignments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        Progress
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-calendar-alt"></i>
+                        Schedule
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-file-alt"></i>
+                        Resources
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+
+            <div class="user-profile">
+                <div class="avatar">JS</div>
+                <div class="user-info">
+                    <h3>John Student</h3>
+                    <p>Grade 11</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="welcome-message">
+                    <h2>Welcome back, John!</h2>
+                    <p>Here's your learning progress for today</p>
+                </div>
+                <div class="header-actions">
+                    <button class="help-btn" id="show-guide">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                    <button class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Demo Video Guide -->
+            <div class="demo-guide" id="demo-guide">
+                <div class="guide-header">
+                    <h2><i class="fas fa-play-circle"></i> Edu Boost Up Platform Guide</h2>
+                    <button class="close-guide" id="close-guide">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="video-container">
+                    <div class="video-placeholder">
+                        <div class="play-button" id="play-video">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <h3>Welcome to Edu Boost Up!</h3>
+                        <p>Watch this 3-minute guide to learn how to navigate the platform, track your progress, and make the most of your learning experience.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mentor Profiles Section -->
+            <div class="mentors-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-chalkboard-teacher"></i> Your Mentors</h2>
+                </div>
+                
+                <div class="mentors-grid">
+                    <!-- Math Mentor -->
+                    <div class="mentor-card">
+                        <div class="mentor-header">
+                            <div class="mentor-avatar">MJ</div>
+                            <div class="mentor-info">
+                                <h3>Mr. Johnson</h3>
+                                <p>Mathematics Teacher</p>
+                                <div class="mentor-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                    <span>4.7 (128 reviews)</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mentor-subjects">
+                            <h4><i class="fas fa-book"></i> Subjects</h4>
+                            <div class="subject-tags">
+                                <span class="subject-tag">Algebra</span>
+                                <span class="subject-tag">Geometry</span>
+                                <span class="subject-tag">Calculus</span>
+                                <span class="subject-tag">Statistics</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mentor-bio">
+                            <p>Specialized in making complex mathematical concepts easy to understand. 10+ years of teaching experience with proven track record of improving student grades.</p>
+                        </div>
+                        
+                        <div class="mentor-actions">
+                            <button class="get-lesson-btn" data-mentor="Mr. Johnson" data-subject="Mathematics">
+                                <i class="fas fa-play-circle"></i> Get Lesson
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Science Mentor -->
+                    <div class="mentor-card">
+                        <div class="mentor-header">
+                            <div class="mentor-avatar">DS</div>
+                            <div class="mentor-info">
+                                <h3>Dr. Smith</h3>
+                                <p>Science Professor</p>
+                                <div class="mentor-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <span>5.0 (94 reviews)</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mentor-subjects">
+                            <h4><i class="fas fa-book"></i> Subjects</h4>
+                            <div class="subject-tags">
+                                <span class="subject-tag">Physics</span>
+                                <span class="subject-tag">Chemistry</span>
+                                <span class="subject-tag">Biology</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mentor-bio">
+                            <p>PhD in Physics with extensive research background. Passionate about inspiring the next generation of scientists through hands-on learning approaches.</p>
+                        </div>
+                        
+                        <div class="mentor-actions">
+                            <button class="get-lesson-btn" data-mentor="Dr. Smith" data-subject="Science">
+                                <i class="fas fa-play-circle"></i> Get Lesson
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- English Mentor -->
+                    <div class="mentor-card">
+                        <div class="mentor-header">
+                            <div class="mentor-avatar">MD</div>
+                            <div class="mentor-info">
+                                <h3>Ms. Davis</h3>
+                                <p>English Literature Expert</p>
+                                <div class="mentor-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <span>4.9 (156 reviews)</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mentor-subjects">
+                            <h4><i class="fas fa-book"></i> Subjects</h4>
+                            <div class="subject-tags">
+                                <span class="subject-tag">Literature</span>
+                                <span class="subject-tag">Writing</span>
+                                <span class="subject-tag">Grammar</span>
+                                <span class="subject-tag">Creative Writing</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mentor-bio">
+                            <p>Master's degree in English Literature with specialization in Shakespearean studies. Focuses on developing critical thinking and analytical writing skills.</p>
+                        </div>
+                        
+                        <div class="mentor-actions">
+                            <button class="get-lesson-btn" data-mentor="Ms. Davis" data-subject="English">
+                                <i class="fas fa-play-circle"></i> Get Lesson
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Cards -->
+            <div class="dashboard-grid">
+                <!-- Progress Overview Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Progress Overview</h3>
+                        <div class="card-icon math">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>Mathematics</span>
+                            <span>75%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill math"></div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>Science</span>
+                            <span>60%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill science"></div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>English</span>
+                            <span>85%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill english"></div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>History</span>
+                            <span>70%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill history"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Classes Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Upcoming Classes</h3>
+                        <div class="card-icon math">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <ul class="classes-list">
+                        <li class="class-item">
+                            <div class="class-time">10:00 AM</div>
+                            <div class="class-info">
+                                <h4>Mathematics - Algebra</h4>
+                                <p>Mr. Johnson • Room 204</p>
+                            </div>
+                        </li>
+                        <li class="class-item">
+                            <div class="class-time">11:30 AM</div>
+                            <div class="class-info">
+                                <h4>Science - Physics</h4>
+                                <p>Dr. Smith • Lab 3</p>
+                            </div>
+                        </li>
+                        <li class="class-item">
+                            <div class="class-time">01:00 PM</div>
+                            <div class="class-info">
+                                <h4>English Literature</h4>
+                                <p>Ms. Davis • Room 105</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Recent Activity Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Activity</h3>
+                        <div class="card-icon science">
+                            <i class="fas fa-history"></i>
+                        </div>
+                    </div>
+                    <ul class="activity-list">
+                        <li class="activity-item">
+                            <div class="activity-icon completed">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h4>Completed Math Assignment</h4>
+                                <p>Quadratic Equations Practice</p>
+                                <div class="activity-time">2 hours ago</div>
+                            </div>
+                        </li>
+                        <li class="activity-item">
+                            <div class="activity-icon quiz">
+                                <i class="fas fa-pencil-alt"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h4>Scored 92% on Science Quiz</h4>
+                                <p>Physics: Motion & Forces</p>
+                                <div class="activity-time">Yesterday</div>
+                            </div>
+                        </li>
+                        <li class="activity-item">
+                            <div class="activity-icon assignment">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h4>Started English Essay</h4>
+                                <p>Shakespeare Analysis</p>
+                                <div class="activity-time">2 days ago</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Lesson Booking Modal -->
+    <div class="modal-overlay" id="lesson-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Book a Lesson</h2>
+                <button class="modal-close" id="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-content">
+                <div class="mentor-info-modal">
+                    <div class="modal-avatar" id="modal-avatar">MJ</div>
+                    <div class="modal-mentor-details">
+                        <h3 id="modal-mentor-name">Mr. Johnson</h3>
+                        <p id="modal-mentor-subject">Mathematics Teacher</p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="lesson-subject">Select Subject</label>
+                    <select id="lesson-subject">
+                        <option value="Algebra">Algebra</option>
+                        <option value="Geometry">Geometry</option>
+                        <option value="Calculus">Calculus</option>
+                        <option value="Statistics">Statistics</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="lesson-date">Preferred Date</label>
+                    <input type="date" id="lesson-date">
+                </div>
+                
+                <div class="form-group">
+                    <label for="lesson-time">Preferred Time</label>
+                    <select id="lesson-time">
+                        <option value="09:00">9:00 AM</option>
+                        <option value="10:00">10:00 AM</option>
+                        <option value="11:00">11:00 AM</option>
+                        <option value="13:00">1:00 PM</option>
+                        <option value="14:00">2:00 PM</option>
+                        <option value="15:00">3:00 PM</option>
+                    </select>
+                </div>
+                
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" id="cancel-booking">Cancel</button>
+                    <button class="btn btn-primary" id="confirm-booking">Confirm Booking</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Demo Guide Functionality
+        const demoGuide = document.getElementById('demo-guide');
+        const showGuideBtn = document.getElementById('show-guide');
+        const closeGuideBtn = document.getElementById('close-guide');
+        const playVideoBtn = document.getElementById('play-video');
+        
+        // Show guide when help button is clicked
+        showGuideBtn.addEventListener('click', function() {
+            demoGuide.classList.add('active');
+        });
+        
+        // Close guide when X button is clicked
+        closeGuideBtn.addEventListener('click', function() {
+            demoGuide.classList.remove('active');
+        });
+        
+        // Simulate video playback
+        playVideoBtn.addEventListener('click', function() {
+            const videoPlaceholder = document.querySelector('.video-placeholder');
+            videoPlaceholder.innerHTML = `
+                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column; color:white; padding:2rem;">
+                    <div style="font-size:3rem; margin-bottom:1rem;"><i class="fas fa-play-circle"></i></div>
+                    <h3 style="font-size:1.5rem; margin-bottom:1rem;">Demo Video Playing</h3>
+                    <p style="text-align:center; max-width:500px; line-height:1.6;">
+                        In a real implementation, this would be an embedded video player showing a tutorial on how to use the Edu Boost Up platform.
+                    </p>
+                    <div style="margin-top:2rem; display:flex; gap:1rem;">
+                        <button style="padding:0.8rem 1.5rem; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer;">
+                            <i class="fas fa-pause"></i> Pause
+                        </button>
+                        <button style="padding:0.8rem 1.5rem; background:#64748b; color:white; border:none; border-radius:8px; cursor:pointer;">
+                            <i class="fas fa-stop"></i> Stop
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Add a restart button after 5 seconds
+            setTimeout(() => {
+                const restartBtn = document.createElement('button');
+                restartBtn.innerHTML = '<i class="fas fa-redo"></i> Watch Again';
+                restartBtn.style.cssText = 'padding:0.8rem 1.5rem; background:var(--accent); color:white; border:none; border-radius:8px; cursor:pointer; margin-top:1rem;';
+                restartBtn.addEventListener('click', function() {
+                    location.reload();
+                });
+                videoPlaceholder.appendChild(restartBtn);
+            }, 5000);
+        });
+        
+        // Show guide automatically for first-time users
+        // In a real app, you would check if this is the user's first login
+        const isFirstTime = true; // This would come from user data in a real app
+        if (isFirstTime) {
+            setTimeout(() => {
+                demoGuide.classList.add('active');
+            }, 1000);
+        }
+
+        // Lesson Booking Functionality
+        const lessonModal = document.getElementById('lesson-modal');
+        const closeModalBtn = document.getElementById('close-modal');
+        const cancelBookingBtn = document.getElementById('cancel-booking');
+        const confirmBookingBtn = document.getElementById('confirm-booking');
+        const getLessonBtns = document.querySelectorAll('.get-lesson-btn');
+        
+        // Open lesson booking modal when "Get Lesson" button is clicked
+        getLessonBtns.forEach(button => {
+            button.addEventListener('click', function() {
+                const mentorName = this.getAttribute('data-mentor');
+                const mentorSubject = this.getAttribute('data-subject');
+                const mentorAvatar = this.closest('.mentor-card').querySelector('.mentor-avatar').textContent;
+                
+                // Set modal content based on selected mentor
+                document.getElementById('modal-mentor-name').textContent = mentorName;
+                document.getElementById('modal-mentor-subject').textContent = mentorSubject + ' Teacher';
+                document.getElementById('modal-avatar').textContent = mentorAvatar;
+                
+                // Set minimum date to today
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('lesson-date').min = today;
+                
+                // Show the modal
+                lessonModal.classList.add('active');
+            });
+        });
+        
+        // Close modal functions
+        closeModalBtn.addEventListener('click', closeModal);
+        cancelBookingBtn.addEventListener('click', closeModal);
+        
+        function closeModal() {
+            lessonModal.classList.remove('active');
+        }
+        
+        // Confirm booking
+        confirmBookingBtn.addEventListener('click', function() {
+            const mentorName = document.getElementById('modal-mentor-name').textContent;
+            const subject = document.getElementById('lesson-subject').value;
+            const date = document.getElementById('lesson-date').value;
+            const time = document.getElementById('lesson-time').value;
+            
+            if (!date) {
+                alert('Please select a date for your lesson');
+                return;
+            }
+            
+            // Format the date for display
+            const formattedDate = new Date(date).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            // Show confirmation
+            alert(`Lesson booked successfully!\n\nMentor: ${mentorName}\nSubject: ${subject}\nDate: ${formattedDate}\nTime: ${time}`);
+            
+            // Close the modal
+            closeModal();
+        });
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === lessonModal) {
+                closeModal();
+            }
+        });
+
+        // Logout function - redirects back to login page
+        function logout() {
+            if (confirm('Are you sure you want to log out?')) {
+                window.location.href = '/';
+            }
+        }
+
+        // Simulate real-time updates
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update the time for activities periodically
+            setInterval(updateActivityTimes, 60000);
+            
+            // Add some interactive elements
+            const notificationBtn = document.querySelector('.notification-btn');
+            notificationBtn.addEventListener('click', function() {
+                alert('You have 3 new notifications');
+            });
+        });
+
+        function updateActivityTimes() {
+            // This would typically update from a server in a real app
+            console.log('Updating activity times...');
+        }
+
+        // Progress animation on page load
+        window.addEventListener('load', function() {
+            const progressBars = document.querySelectorAll('.progress-fill');
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html>
