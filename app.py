@@ -1,17 +1,77 @@
 from flask import Flask, render_template, redirect, url_for, session, request, flash
 from datetime import timedelta
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'eduboostup-secret-key-2023'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 
-# Demo user data (in a real app, this would be in a database)
-DEMO_USERS = {
-    'demo@eduboostup.com': {'password': 'demo123', 'name': 'John Student', 'grade': '11', 'user_type': 'student'},
-    'EBU2024001': {'password': 'demo123', 'name': 'John Student', 'grade': '11', 'user_type': 'student'},
-    'admin@eduboostup.com': {'password': 'admin123', 'name': 'Admin User', 'user_type': 'admin'},
-    'mentor@eduboostup.com': {'password': 'mentor123', 'name': 'Mr. Johnson', 'user_type': 'mentor'}
+# Database configuration
+app.config['DATABASE_CONFIG'] = {
+    'host': 'localhost',
+    'database': 'eduboostup',  # You'll need to create this database
+    'user': 'postgres',
+    'password': 'Admin123',
+    'port': '5432'
 }
+
+def get_db_connection():
+    """Create and return a database connection"""
+    try:
+        conn = psycopg2.connect(**app.config['DATABASE_CONFIG'])
+        return conn
+    except Exception as e:
+        print(f"Database connection error: {e}")
+        return None
+
+def init_db():
+    """Initialize the database with required tables"""
+    conn = get_db_connection()
+    if conn:
+        try:
+            cur = conn.cursor()
+            
+            # Create users table
+            cur.execute('''
+                CREATE TABLE IF NOT EXISTS users (
+                    id SERIAL PRIMARY KEY,
+                    email VARCHAR(255) UNIQUE NOT NULL,
+                    password VARCHAR(255) NOT NULL,
+                    name VARCHAR(255) NOT NULL,
+                    user_type VARCHAR(50) NOT NULL,
+                    grade VARCHAR(10),
+                    student_id VARCHAR(50),
+                    surname VARCHAR(255),
+                    phone VARCHAR(20),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            # Insert demo users if they don't exist
+            demo_users = [
+                ('student@eduboostup.com', 'password123', 'John Student', 'student', '11', 'STU001', 'Doe', '1234567890'),
+                ('admin@eduboostup.com', 'admin123', 'Admin User', 'admin', NULL, NULL, NULL, NULL),
+                ('mentor@eduboostup.com', 'mentor123', 'Jane Mentor', 'mentor', NULL, NULL, 'Smith', NULL)
+            ]
+            
+            for user in demo_users:
+                cur.execute('''
+                    INSERT INTO users (email, password, name, user_type, grade, student_id, surname, phone)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (email) DO NOTHING
+                ''', user)
+            
+            conn.commit()
+            cur.close()
+            print("Database initialized successfully!")
+            
+        except Exception as e:
+            print(f"Error initializing database: {e}")
+            conn.rollback()
+        finally:
+            conn.close()
 
 @app.route('/')
 def index():
@@ -24,27 +84,45 @@ def student_login():
         password = request.form.get('password')
         remember = request.form.get('remember')
         
-        # Check if user exists and password matches
-        if email in DEMO_USERS and DEMO_USERS[email]['password'] == password:
-            user = DEMO_USERS[email]
-            session['user_id'] = email
-            session['user_name'] = user['name']
-            session['user_type'] = user['user_type']
-            
-            if remember:
-                session.permanent = True
-            
-            flash('Login successful!', 'success')
-            
-            # Redirect based on user type
-            if user['user_type'] == 'student':
-                return redirect(url_for('student_dashboard'))
-            elif user['user_type'] == 'admin':
-                return redirect(url_for('admin_dashboard'))
-            elif user['user_type'] == 'mentor':
-                return redirect(url_for('mentor_dashboard'))
+        # Check if user exists in database
+        conn = get_db_connection()
+        if conn:
+            try:
+                cur = conn.cursor(cursor_factory=RealDictCursor)
+                cur.execute(
+                    'SELECT * FROM users WHERE email = %s AND password = %s',
+                    (email, password)
+                )
+                user = cur.fetchone()
+                cur.close()
+                
+                if user:
+                    session['user_id'] = user['email']
+                    session['user_name'] = user['name']
+                    session['user_type'] = user['user_type']
+                    
+                    if remember:
+                        session.permanent = True
+                    
+                    flash('Login successful!', 'success')
+                    
+                    # Redirect based on user type
+                    if user['user_type'] == 'student':
+                        return redirect(url_for('student_dashboard'))
+                    elif user['user_type'] == 'admin':
+                        return redirect(url_for('admin_dashboard'))
+                    elif user['user_type'] == 'mentor':
+                        return redirect(url_for('mentor_dashboard'))
+                else:
+                    flash('Invalid credentials. Please try again.', 'error')
+                    
+            except Exception as e:
+                print(f"Database error: {e}")
+                flash('Database error. Please try again.', 'error')
+            finally:
+                conn.close()
         else:
-            flash('Invalid credentials. Please try again.', 'error')
+            flash('Database connection failed. Please try again.', 'error')
     
     return render_template('studentLogin.html')
 
@@ -55,17 +133,35 @@ def student_dashboard():
         flash('Please log in to access the dashboard.', 'error')
         return redirect(url_for('student_login'))
     
-    user_data = {
-        'name': session.get('user_name', 'Student'),
-        'grade': DEMO_USERS.get(session['user_id'], {}).get('grade', '11')
-    }
+    # Get user data from database
+    conn = get_db_connection()
+    user_data = {'name': session.get('user_name', 'Student'), 'grade': '11'}
+    
+    if conn:
+        try:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            cur.execute(
+                'SELECT name, grade FROM users WHERE email = %s',
+                (session['user_id'],)
+            )
+            user_db = cur.fetchone()
+            if user_db:
+                user_data = {
+                    'name': user_db['name'],
+                    'grade': user_db['grade'] or '11'
+                }
+            cur.close()
+        except Exception as e:
+            print(f"Database error: {e}")
+        finally:
+            conn.close()
     
     return render_template('student_deshboard.html', user=user_data)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        # Handle signup logic here
+        # Get form data
         student_id = request.form.get('student_id')
         name = request.form.get('name')
         surname = request.form.get('surname')
@@ -75,10 +171,35 @@ def signup():
         password = request.form.get('password')
         terms = request.form.get('terms')
         
-        # In a real app, you would save this to a database
-        # For demo purposes, we'll just redirect to login
-        flash('Account created successfully! Please log in.', 'success')
-        return redirect(url_for('student_login'))
+        # Validate required fields
+        if not all([email, password, name, surname, grade]):
+            flash('Please fill in all required fields.', 'error')
+            return render_template('signup.html')
+        
+        # Save to database
+        conn = get_db_connection()
+        if conn:
+            try:
+                cur = conn.cursor()
+                cur.execute('''
+                    INSERT INTO users (email, password, name, user_type, grade, student_id, surname, phone)
+                    VALUES (%s, %s, %s, 'student', %s, %s, %s, %s)
+                ''', (email, password, f"{name} {surname}", grade, student_id, surname, phone))
+                conn.commit()
+                cur.close()
+                
+                flash('Account created successfully! Please log in.', 'success')
+                return redirect(url_for('student_login'))
+                
+            except psycopg2.IntegrityError:
+                flash('Email already exists. Please use a different email.', 'error')
+            except Exception as e:
+                print(f"Database error: {e}")
+                flash('Error creating account. Please try again.', 'error')
+            finally:
+                conn.close()
+        else:
+            flash('Database connection failed. Please try again.', 'error')
     
     return render_template('signup.html')
 
@@ -88,14 +209,33 @@ def admin_login():
         email = request.form.get('email')
         password = request.form.get('password')
         
-        if email in DEMO_USERS and DEMO_USERS[email]['password'] == password and DEMO_USERS[email]['user_type'] == 'admin':
-            session['user_id'] = email
-            session['user_name'] = DEMO_USERS[email]['name']
-            session['user_type'] = 'admin'
-            flash('Admin login successful!', 'success')
-            return redirect(url_for('admin_dashboard'))
+        conn = get_db_connection()
+        if conn:
+            try:
+                cur = conn.cursor(cursor_factory=RealDictCursor)
+                cur.execute(
+                    'SELECT * FROM users WHERE email = %s AND password = %s AND user_type = %s',
+                    (email, password, 'admin')
+                )
+                user = cur.fetchone()
+                cur.close()
+                
+                if user:
+                    session['user_id'] = user['email']
+                    session['user_name'] = user['name']
+                    session['user_type'] = 'admin'
+                    flash('Admin login successful!', 'success')
+                    return redirect(url_for('admin_dashboard'))
+                else:
+                    flash('Invalid admin credentials.', 'error')
+                    
+            except Exception as e:
+                print(f"Database error: {e}")
+                flash('Database error. Please try again.', 'error')
+            finally:
+                conn.close()
         else:
-            flash('Invalid admin credentials.', 'error')
+            flash('Database connection failed. Please try again.', 'error')
     
     return render_template('adminLogin.html')
 
@@ -113,14 +253,33 @@ def mentor_login():
         email = request.form.get('email')
         password = request.form.get('password')
         
-        if email in DEMO_USERS and DEMO_USERS[email]['password'] == password and DEMO_USERS[email]['user_type'] == 'mentor':
-            session['user_id'] = email
-            session['user_name'] = DEMO_USERS[email]['name']
-            session['user_type'] = 'mentor'
-            flash('Mentor login successful!', 'success')
-            return redirect(url_for('mentor_dashboard'))
+        conn = get_db_connection()
+        if conn:
+            try:
+                cur = conn.cursor(cursor_factory=RealDictCursor)
+                cur.execute(
+                    'SELECT * FROM users WHERE email = %s AND password = %s AND user_type = %s',
+                    (email, password, 'mentor')
+                )
+                user = cur.fetchone()
+                cur.close()
+                
+                if user:
+                    session['user_id'] = user['email']
+                    session['user_name'] = user['name']
+                    session['user_type'] = 'mentor'
+                    flash('Mentor login successful!', 'success')
+                    return redirect(url_for('mentor_dashboard'))
+                else:
+                    flash('Invalid mentor credentials.', 'error')
+                    
+            except Exception as e:
+                print(f"Database error: {e}")
+                flash('Database error. Please try again.', 'error')
+            finally:
+                conn.close()
         else:
-            flash('Invalid mentor credentials.', 'error')
+            flash('Database connection failed. Please try again.', 'error')
     
     return render_template('mentorLogin.html')
 
@@ -166,4 +325,6 @@ def internal_error(error):
     return render_template('500.html'), 500
 
 if __name__ == '__main__':
+    # Initialize database when starting the app
+    init_db()
     app.run(debug=True)
