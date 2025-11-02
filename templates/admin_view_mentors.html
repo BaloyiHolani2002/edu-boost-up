@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - View Mentors</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        img.profile-img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            margin: 2px;
+            text-decoration: none;
+            color: white;
+            border-radius: 4px;
+        }
+
+        .edit-btn {
+            background-color: #4CAF50;
+        }
+
+        .delete-btn {
+            background-color: #f44336;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Mentors Management</h1>
+    <a href="{{ url_for('admin_add_mentor') }}">➕ Add New Mentor</a>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Profile Image</th>
+                <th>Name</th>
+                <th>Surname</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Subject Speciality</th>
+                <th>Bio</th>
+                <th>Join Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mentor in mentors %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>
+                    {% if mentor.profile_image %}
+                    <img src="{{ url_for('static', filename=mentor.profile_image.split('static/')[-1]) }}"
+                        class="profile-img">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='images/default-user.png') }}" class="profile-img">
+                    {% endif %}
+                </td>
+                <td>{{ mentor.name }}</td>
+                <td>{{ mentor.surname }}</td>
+                <td>{{ mentor.email }}</td>
+                <td>{{ mentor.phone or '-' }}</td>
+                <td>{{ mentor.subject_speciality or '-' }}</td>
+                <td>{{ mentor.bio or '-' }}</td>
+                <td>{{ mentor.join_date }}</td>
+                <td>{{ mentor.status }}</td>
+                <td>
+                    <a href="{{ url_for('admin_edit_mentor', mentor_id=mentor.mentor_id) }}"
+                        class="action-btn edit-btn">Edit</a>
+                    <a href="{{ url_for('admin_delete_mentor', mentor_id=mentor.mentor_id) }}"
+                        class="action-btn delete-btn">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+</html>

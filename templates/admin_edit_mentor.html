@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Mentor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <h1>Edit Mentor: {{ mentor.name }} {{ mentor.surname }}</h1>
+
+    <form action="" method="POST" enctype="multipart/form-data">
+        <label>Name:</label>
+        <input type="text" name="name" value="{{ mentor.name }}" required><br>
+
+        <label>Surname:</label>
+        <input type="text" name="surname" value="{{ mentor.surname }}" required><br>
+
+        <label>Email:</label>
+        <input type="email" name="email" value="{{ mentor.email }}" required><br>
+
+        <label>Phone:</label>
+        <input type="text" name="phone" value="{{ mentor.phone }}"><br>
+
+        <label>Subject Speciality:</label>
+        <input type="text" name="subject_speciality" value="{{ mentor.subject_speciality }}"><br>
+
+        <label>Bio:</label>
+        <textarea name="bio">{{ mentor.bio }}</textarea><br>
+
+        <label>Status:</label>
+        <select name="status">
+            <option value="active" {% if mentor.status == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if mentor.status == 'inactive' %}selected{% endif %}>Inactive</option>
+        </select><br>
+
+        <label>Profile Image:</label>
+        {% if mentor.profile_image %}
+            <img src="{{ url_for('static', filename=mentor.profile_image.split('static/')[-1]) }}" 
+                 alt="Profile Image" width="100"><br>
+        {% endif %}
+        <input type="file" name="profile_image" accept="image/*"><br><br>
+
+        <button type="submit">Update Mentor</button>
+    </form>
+
+    <a href="{{ url_for('admin_view_mentors') }}">Back to Mentor List</a>
+</body>
+</html>

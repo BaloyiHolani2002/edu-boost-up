@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head><title>Students</title></head>
+<body>
+  <h2>All Students</h2>
+  <a href="/admin/dashboard">← Back</a>
+  <table>
+    <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Grade</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for s in students %}
+      <tr>
+        <td>{{ s.student_id }}</td>
+        <td>{{ s.name }} {{ s.surname }}</td>
+        <td>{{ s.email }}</td>
+        <td>{{ s.grade }}</td>
+        <td>{{ s.status or 'active' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5">No students found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

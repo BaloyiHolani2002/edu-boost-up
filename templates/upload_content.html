@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Upload Content for Grade {{ grade }}</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    <input type="text" name="title" placeholder="Title" class="form-control" required><br>
+
+    <textarea name="description" placeholder="Description" class="form-control"></textarea><br>
+
+    <input type="text" name="subject" placeholder="Subject" class="form-control" required><br>
+
+    <label>Upload PDF (Optional):</label>
+    <input type="file" name="pdf_file" accept="application/pdf" class="form-control"><br>
+
+    <label>Upload Videos (You can upload many):</label>
+    <input type="file" name="video_files" accept="video/*" multiple class="form-control"><br><br>
+
+    <button type="submit" class="btn btn-success">Upload Content</button>
+</form>
+{% endblock %}

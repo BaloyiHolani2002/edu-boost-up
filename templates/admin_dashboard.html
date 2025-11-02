@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Edu Boost Up</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4361ee;
+      --primary-dark: #3a56d4;
+      --secondary: #7209b7;
+      --accent: #f72585;
+      --success: #4cc9f0;
+      --warning: #f8961e;
+      --danger: #f94144;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --light-gray: #e9ecef;
+      --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      --hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      color: var(--dark);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Header Styles */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      padding: 16px 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .logo {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .brand-text h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .brand-text p {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .admin-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .admin-details {
+      text-align: right;
+    }
+
+    .admin-name {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .admin-role {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .logout-btn {
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Dashboard Content */
+    .dashboard {
+      padding: 30px 0;
+    }
+
+    .welcome-banner {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      padding: 25px;
+      border-radius: 16px;
+      margin-bottom: 30px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .welcome-text h2 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .welcome-text p {
+      opacity: 0.9;
+      max-width: 600px;
+    }
+
+    .date-display {
+      background: rgba(255, 255, 255, 0.15);
+      padding: 12px 18px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .date-display .day {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .date-display .date {
+      font-size: 14px;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--hover-shadow);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 6px;
+      height: 100%;
+      background: var(--primary);
+    }
+
+    .stat-card.students::before {
+      background: var(--primary);
+    }
+
+    .stat-card.mentors::before {
+      background: var(--secondary);
+    }
+
+    .stat-card.classes::before {
+      background: var(--accent);
+    }
+
+    .stat-card.enrollments::before {
+      background: var(--success);
+    }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 22px;
+    }
+
+    .stat-card.students .stat-icon {
+      background: var(--primary);
+    }
+
+    .stat-card.mentors .stat-icon {
+      background: var(--secondary);
+    }
+
+    .stat-card.classes .stat-icon {
+      background: var(--accent);
+    }
+
+    .stat-card.enrollments .stat-icon {
+      background: var(--success);
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: var(--gray);
+    }
+
+    .stat-actions {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+    }
+
+    /* Main Content Grid */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 25px;
+    }
+
+    @media (max-width: 1024px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 25px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    .view-all {
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .action-btn {
+      background: white;
+      border: 1px solid var(--light-gray);
+      border-radius: 12px;
+      padding: 18px 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: var(--dark);
+    }
+
+    .action-btn:hover {
+      background: var(--primary);
+      color: white;
+      transform: translateY(-3px);
+      box-shadow: var(--hover-shadow);
+    }
+
+    .action-icon {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: var(--primary);
+    }
+
+    .action-btn:hover .action-icon {
+      color: white;
+    }
+
+    .action-text {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* Tables */
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      padding: 12px 15px;
+      border-bottom: 1px solid var(--light-gray);
+      font-weight: 600;
+      color: var(--gray);
+      font-size: 14px;
+    }
+
+    td {
+      padding: 12px 15px;
+      border-bottom: 1px solid var(--light-gray);
+      font-size: 14px;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-active {
+      background: rgba(76, 201, 240, 0.15);
+      color: var(--success);
+    }
+
+    .status-pending {
+      background: rgba(248, 150, 30, 0.15);
+      color: var(--warning);
+    }
+
+    .status-expired {
+      background: rgba(249, 65, 68, 0.15);
+      color: var(--danger);
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid var(--light-gray);
+      border-radius: 10px;
+      font-size: 14px;
+      transition: border 0.3s ease;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    textarea.form-control {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background: var(--light-gray);
+      color: var(--dark);
+    }
+
+    .btn-secondary:hover {
+      background: var(--gray);
+      color: white;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    /* Footer */
+    footer {
+      background: white;
+      padding: 20px 0;
+      margin-top: 40px;
+      border-top: 1px solid var(--light-gray);
+    }
+
+    .footer-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .copyright {
+      font-size: 14px;
+      color: var(--gray);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-links a {
+      color: var(--gray);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+      
+      .admin-info {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .admin-details {
+        text-align: center;
+      }
+      
+      .welcome-banner {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+      
+      .quick-actions {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      }
+      
+      .footer-content {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <div class="logo-section">
+          <div class="logo">
+            <img src="/static/images/edo_logo.png.jpeg" alt="Edu Boost Up Logo">
+          </div>
+          <div class="brand-text">
+            <h1>Edu Boost Up</h1>
+            <p>Admin Dashboard</p>
+          </div>
+        </div>
+        
+        <div class="admin-info">
+          <div class="admin-details">
+            <div class="admin-name">{{ admin_name or "Administrator" }}</div>
+            <div class="admin-role">System Administrator</div>
+          </div>
+          <a href="/admin/logout" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard container">
+    <div class="welcome-banner">
+      <div class="welcome-text">
+        <h2>Welcome back, {{ admin_name or "Administrator" }}!</h2>
+        <p>Manage students, mentors, classes, and content from your centralized dashboard.</p>
+      </div>
+      <div class="date-display">
+        <div class="day" id="current-day">Monday</div>
+        <div class="date" id="current-date">June 10, 2023</div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card students">
+        <div class="stat-header">
+          <div>
+            <div class="stat-value">{{ stats.students }}</div>
+            <div class="stat-label">Total Students</div>
+          </div>
+          <div class="stat-icon">
+            <i class="fas fa-user-graduate"></i>
+          </div>
+        </div>
+        <div class="stat-actions">
+          <a href="/admin/students" class="btn btn-primary">
+            <i class="fas fa-users"></i> View All
+          </a>
+          <a href="/admin/enrollments" class="btn btn-secondary">
+            <i class="fas fa-layer-group"></i> Enrollments
+          </a>
+        </div>
+      </div>
+
+      <div class="stat-card mentors">
+        <div class="stat-header">
+          <div>
+            <div class="stat-value">{{ stats.mentors }}</div>
+            <div class="stat-label">Mentor Accounts</div>
+          </div>
+          <div class="stat-icon">
+            <i class="fas fa-chalkboard-teacher"></i>
+          </div>
+        </div>
+        <div class="stat-actions">
+          <a href="/admin/mentors" class="btn btn-primary">
+            <i class="fas fa-users-gear"></i> Manage
+          </a>
+          <a href="/admin/mentors/add" class="btn btn-secondary">
+            <i class="fas fa-user-plus"></i> Add New
+          </a>
+        </div>
+      </div>
+
+      <div class="stat-card classes">
+        <div class="stat-header">
+          <div>
+            <div class="stat-value">{{ stats.classes }}</div>
+            <div class="stat-label">Scheduled Classes</div>
+          </div>
+          <div class="stat-icon">
+            <i class="fas fa-calendar-days"></i>
+          </div>
+        </div>
+        <div class="stat-actions">
+          <a href="/admin/classes" class="btn btn-primary">
+            <i class="fas fa-chalkboard"></i> Manage
+          </a>
+        </div>
+      </div>
+
+      <div class="stat-card enrollments">
+        <div class="stat-header">
+          <div>
+            <div class="stat-value">{{ stats.active_enrollments }}</div>
+            <div class="stat-label">Active Enrollments</div>
+          </div>
+          <div class="stat-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+        </div>
+        <div class="stat-actions">
+          <a href="/admin/enrollments" class="btn btn-primary">
+            <i class="fas fa-list-check"></i> Details
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Quick Actions</div>
+            <a href="/admin/actions" class="view-all">
+              View All <i class="fas fa-chevron-right"></i>
+            </a>
+          </div>
+          <div class="quick-actions">
+            <a href="/admin/students" class="action-btn">
+              <div class="action-icon">
+                <i class="fas fa-user-graduate"></i>
+              </div>
+              <div class="action-text">View Students</div>
+            </a>
+            <a href="/admin/mentors" class="action-btn">
+              <div class="action-icon">
+                <i class="fas fa-users-gear"></i>
+              </div>
+              <div class="action-text">Manage Mentors</div>
+            </a>
+            <a href="/admin/content" class="action-btn">
+              <div class="action-icon">
+                <i class="fas fa-file-lines"></i>
+              </div>
+              <div class="action-text">Content Oversight</div>
+            </a>
+            <a href="/admin/classes" class="action-btn">
+              <div class="action-icon">
+                <i class="fas fa-chalkboard"></i>
+              </div>
+              <div class="action-text">Class Management</div>
+            </a>
+            <a href="/admin/requests" class="action-btn">
+              <div class="action-icon">
+                <i class="fas fa-question-circle"></i>
+              </div>
+              <div class="action-text">Manage Requests</div>
+            </a>
+            <a href="/admin/audit" class="action-btn">
+              <div class="action-icon">
+                <i class="fas fa-file-shield"></i>
+              </div>
+              <div class="action-text">Audit Trail</div>
+            </a>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Recent Enrollments</div>
+            <a href="/admin/enrollments" class="view-all">
+              View All <i class="fas fa-chevron-right"></i>
+            </a>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Class</th>
+                  <th>Days Left</th>
+                  <th>Status</th>
+                  <th>Updated</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for e in [] %} {# placeholder: replace with a small query in real use #}
+                  <tr>
+                    <td>{{ e.name }} {{ e.surname }}</td>
+                    <td>{{ e.class_title }}</td>
+                    <td>{{ e.days_remaining }}</td>
+                    <td>
+                      <span class="status-badge {% if e.status == 'active' %}status-active{% elif e.status == 'pending' %}status-pending{% else %}status-expired{% endif %}">
+                        {{ e.status }}
+                      </span>
+                    </td>
+                    <td>{{ e.last_updated }}</td>
+                  </tr>
+                {% else %}
+                  <tr>
+                    <td colspan="5" style="text-align: center; padding: 20px; color: var(--gray);">
+                      No recent enrollments to show
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Send Notification</div>
+          </div>
+          <p style="margin-bottom: 15px; font-size: 14px; color: var(--gray);">
+            Send quick notifications to students or mentors
+          </p>
+          <form action="/admin/notifications" method="POST">
+            <div class="form-group">
+              <label class="form-label">Title</label>
+              <input type="text" name="title" class="form-control" placeholder="Notification title" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Message</label>
+              <textarea name="message" class="form-control" placeholder="Enter your message here..." required></textarea>
+            </div>
+            <div class="btn-group">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i> Send
+              </button>
+              <a href="/admin/system" class="btn btn-secondary">
+                <i class="fas fa-gear"></i> Settings
+              </a>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">System Status</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 14px;">Server Load</span>
+              <span style="font-weight: 600; color: var(--success);">Normal</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 14px;">Database</span>
+              <span style="font-weight: 600; color: var(--success);">Online</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 14px;">Storage</span>
+              <span style="font-weight: 600; color: var(--warning);">78% Used</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 14px;">Last Backup</span>
+              <span style="font-weight: 600; color: var(--success);">Today, 02:00</span>
+            </div>
+          </div>
+          <div class="btn-group" style="margin-top: 20px;">
+            <a href="/admin/system" class="btn btn-primary" style="flex: 1;">
+              <i class="fas fa-chart-bar"></i> Analytics
+            </a>
+            <a href="/admin/audit" class="btn btn-secondary" style="flex: 1;">
+              <i class="fas fa-shield-alt"></i> Security
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="copyright">
+          &copy; 2023 Edu Boost Up. All rights reserved.
+        </div>
+        <div class="footer-links">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Support</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Update current date and day
+    function updateDateTime() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('current-day').textContent = now.toLocaleDateString('en-US', { weekday: 'long' });
+      document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    
+    // Initialize
+    updateDateTime();
+    
+    // Add some interactive elements
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add hover effects to stat cards
+      const statCards = document.querySelectorAll('.stat-card');
+      statCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateY(-5px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+          this.style.transform = 'translateY(0)';
+        });
+      });
+    });
+  </script>
+</body>
+</html>

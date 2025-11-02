@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -259,10 +260,21 @@
             transition: all 0.3s ease;
         }
 
-        .social-btn.facebook { background: #3b5998; }
-        .social-btn.twitter { background: #1da1f2; }
-        .social-btn.linkedin { background: #0077b5; }
-        .social-btn.whatsapp { background: #25d366; }
+        .social-btn.facebook {
+            background: #3b5998;
+        }
+
+        .social-btn.twitter {
+            background: #1da1f2;
+        }
+
+        .social-btn.linkedin {
+            background: #0077b5;
+        }
+
+        .social-btn.whatsapp {
+            background: #25d366;
+        }
 
         .social-btn:hover {
             transform: translateY(-3px);
@@ -695,7 +707,7 @@
                 width: 100%;
                 text-align: center;
             }
-            
+
             .price {
                 font-size: 2.5rem;
             }
@@ -713,6 +725,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Header -->
     <header>
@@ -744,7 +757,8 @@
                 <i class="fas fa-star"></i> 20 DAYS FREE TRIAL
             </div>
             <h2>Empowering Grade 10-12 Students to Excel</h2>
-            <p>Access quality learning materials, request extra classes, and get personalized support in Mathematics, Accounting, and Physical Science.</p>
+            <p>Access quality learning materials, request extra classes, and get personalized support in Mathematics,
+                Accounting, and Physical Science.</p>
             <a href="/signup" class="btn btn-primary btn-large">Start Your Free Trial</a>
         </div>
     </section>
@@ -758,8 +772,11 @@
             </div>
             <div class="video-container">
                 <div class="video-wrapper">
-                    <video id="promo-video" poster="https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80">
-                        <source src="https://assets.mixkit.co/videos/preview/mixkit-group-of-students-studying-online-46407-large.mp4" type="video/mp4">
+                    <video id="promo-video"
+                        poster="https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80">
+                        <source
+                            src="https://assets.mixkit.co/videos/preview/mixkit-group-of-students-studying-online-46407-large.mp4"
+                            type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
                     <div class="video-overlay" id="video-overlay">
@@ -769,7 +786,7 @@
                     </div>
                 </div>
                 <p>Experience how Edu Boost Up transforms learning for high school students</p>
-                
+
                 <!-- Social Media Share -->
                 <div class="social-share">
                     <a href="#" class="social-btn facebook">
@@ -804,7 +821,7 @@
                 <h3>Student Premium</h3>
                 <div class="price">R60<span>/month</span></div>
                 <p>After 20-day free trial • Cancel anytime</p>
-                
+
                 <ul class="price-details">
                     <li><i class="fas fa-check"></i> Full access to all subjects</li>
                     <li><i class="fas fa-check"></i> Request extra classes</li>
@@ -812,13 +829,13 @@
                     <li><i class="fas fa-check"></i> Mentor support</li>
                     <li><i class="fas fa-check"></i> Progress tracking</li>
                 </ul>
-                
+
                 <a href="/signup" class="btn btn-primary btn-large">Start Free Trial</a>
             </div>
         </div>
     </section>
 
-   
+
     <!-- Subjects Section -->
     <section class="subjects" id="subjects">
         <div class="container">
@@ -876,12 +893,13 @@
         </div>
     </section>
 
-  
+
     <!-- CTA Section -->
     <section class="cta">
         <div class="container">
             <h2>Ready to Boost Your Academic Performance?</h2>
-            <p>Join thousands of students who are already improving their grades with Edu Boost Up. Start your 20-day free trial today!</p>
+            <p>Join thousands of students who are already improving their grades with Edu Boost Up. Start your 20-day
+                free trial today!</p>
             <a href="/signup" class="btn btn-outline btn-large">Start Free Trial</a>
         </div>
     </section>
@@ -920,7 +938,7 @@
                     </ul>
                 </div>
             </div>
-            
+
             <!-- Staff Login Links -->
             <div class="staff-login">
                 <p style="color: #adb5bd; font-size: 0.9rem; margin-bottom: 1rem;">Staff Access</p>
@@ -933,19 +951,20 @@
                     </a>
                 </div>
             </div>
-            
+
             <div class="copyright">
-                <p>&copy; 2025 Edu Boost Up. All rights reserved. | Learn, grow, and rise — Edu Boost Up empowers your academic journey.</p>
+                <p>&copy; 2025 Edu Boost Up. All rights reserved. | Learn, grow, and rise — Edu Boost Up empowers your
+                    academic journey.</p>
             </div>
         </div>
     </footer>
 
     <script>
         // Tab functionality for user types
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const tabs = document.querySelectorAll('.user-tab');
             const studentContent = document.getElementById('student-content');
-            
+
             // Create mentor and admin content
             const mentorContent = document.createElement('div');
             mentorContent.className = 'user-features';
@@ -979,7 +998,7 @@
                     </div>
                 </div>
             `;
-            
+
             const adminContent = document.createElement('div');
             adminContent.className = 'user-features';
             adminContent.innerHTML = `
@@ -1012,25 +1031,25 @@
                     </div>
                 </div>
             `;
-            
+
             const userContent = document.querySelector('.user-content');
-            
+
             tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
+                tab.addEventListener('click', function () {
                     // Remove active class from all tabs
                     tabs.forEach(t => t.classList.remove('active'));
-                    
+
                     // Add active class to clicked tab
                     this.classList.add('active');
-                    
+
                     // Update content based on selected tab
                     const tabType = this.getAttribute('data-tab');
-                    
+
                     // Remove existing content
                     while (userContent.firstChild) {
                         userContent.removeChild(userContent.firstChild);
                     }
-                    
+
                     // Add appropriate content
                     if (tabType === 'student') {
                         userContent.appendChild(studentContent);
@@ -1041,18 +1060,18 @@
                     }
                 });
             });
-            
+
             // Video play functionality
             const video = document.getElementById('promo-video');
             const videoOverlay = document.getElementById('video-overlay');
             const playButton = document.getElementById('play-button');
-            
-            playButton.addEventListener('click', function() {
+
+            playButton.addEventListener('click', function () {
                 video.play();
                 videoOverlay.classList.add('hidden');
             });
-            
-            video.addEventListener('click', function() {
+
+            video.addEventListener('click', function () {
                 if (video.paused) {
                     video.play();
                     videoOverlay.classList.add('hidden');
@@ -1064,4 +1083,5 @@
         });
     </script>
 </body>
+
 </html>

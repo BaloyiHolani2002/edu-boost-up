@@ -459,68 +459,6 @@
             gap: 0.3rem;
         }
 
-        /* Loading state */
-        .btn-loading {
-            pointer-events: none;
-            opacity: 0.8;
-        }
-
-        .btn-loading::after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            margin: auto;
-            border: 2px solid transparent;
-            border-top-color: #ffffff;
-            border-radius: 50%;
-            animation: button-loading-spinner 1s ease infinite;
-        }
-
-        @keyframes button-loading-spinner {
-            from { transform: rotate(0turn); }
-            to { transform: rotate(1turn); }
-        }
-
-        /* Notification system */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            color: white;
-            font-weight: 600;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            max-width: 350px;
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification.error {
-            background: var(--error);
-        }
-
-        .notification.success {
-            background: var(--success);
-        }
-
-        .notification i {
-            font-size: 1.2rem;
-        }
-
         /* Password toggle */
         .password-toggle {
             position: absolute;
@@ -706,10 +644,9 @@
                     <div class="form-group">
                         <label for="student_id">ID NUMBER</label>
                         <div class="input-container">
-                            <input type="text" id="student_id" name="student_id" required placeholder="Enter ID Number">
+                            <input type="text" id="student_id" name="student_id" required placeholder="Enter 13-digit SA ID Number">
                             <i class="fas fa-id-card input-icon"></i>
                         </div>
-                        <div class="error-message" id="student-id-error"></div>
                     </div>
 
                     <div class="form-group">
@@ -718,7 +655,6 @@
                             <input type="text" id="name" name="name" required placeholder="First name">
                             <i class="fas fa-user input-icon"></i>
                         </div>
-                        <div class="error-message" id="name-error"></div>
                     </div>
 
                     <div class="form-group">
@@ -727,7 +663,6 @@
                             <input type="text" id="surname" name="surname" required placeholder="Surname">
                             <i class="fas fa-user input-icon"></i>
                         </div>
-                        <div class="error-message" id="surname-error"></div>
                     </div>
 
                     <div class="form-group">
@@ -736,7 +671,6 @@
                             <input type="email" id="email" name="email" required placeholder="Email address">
                             <i class="fas fa-envelope input-icon"></i>
                         </div>
-                        <div class="error-message" id="email-error"></div>
                     </div>
                 </div>
 
@@ -748,7 +682,6 @@
                             <input type="tel" id="phone" name="phone" required placeholder="Phone number">
                             <i class="fas fa-phone input-icon"></i>
                         </div>
-                        <div class="error-message" id="phone-error"></div>
                     </div>
 
                     <div class="form-group">
@@ -762,7 +695,6 @@
                             </select>
                             <i class="fas fa-graduation-cap input-icon"></i>
                         </div>
-                        <div class="error-message" id="grade-error"></div>
                     </div>
 
                     <div class="form-group">
@@ -777,7 +709,6 @@
                         <div class="password-strength">
                             <div class="strength-bar" id="strength-bar"></div>
                         </div>
-                        <div class="error-message" id="password-error"></div>
                     </div>
 
                     <div class="pricing-info">
@@ -799,7 +730,6 @@
                             I agree to the <a id="terms-link">Terms of Service</a> and <a id="privacy-link">Privacy Policy</a>
                         </label>
                     </div>
-                    <div class="error-message" id="terms-error"></div>
 
                     <button type="submit" class="btn btn-primary" id="submit-btn">
                         <i class="fas fa-rocket"></i>
@@ -944,163 +874,20 @@
     </div>
 
     <script>
-        // Form validation
-        const form = document.getElementById('signup-form');
-        const submitBtn = document.getElementById('submit-btn');
-        
-        // Error elements
-        const studentIdError = document.getElementById('student-id-error');
-        const nameError = document.getElementById('name-error');
-        const surnameError = document.getElementById('surname-error');
-        const emailError = document.getElementById('email-error');
-        const phoneError = document.getElementById('phone-error');
-        const gradeError = document.getElementById('grade-error');
-        const passwordError = document.getElementById('password-error');
-        const termsError = document.getElementById('terms-error');
-        
-        // Modal elements
-        const termsModal = document.getElementById('terms-modal');
-        const privacyModal = document.getElementById('privacy-modal');
-        const termsLink = document.getElementById('terms-link');
-        const privacyLink = document.getElementById('privacy-link');
-        const termsClose = document.getElementById('terms-close');
-        const privacyClose = document.getElementById('privacy-close');
-        const termsAgree = document.getElementById('terms-agree');
-        const privacyAgree = document.getElementById('privacy-agree');
-        
-        // Clear errors on input
-        const inputs = form.querySelectorAll('input, select');
-        inputs.forEach(input => {
-            input.addEventListener('input', () => {
-                clearError(input);
-            });
-        });
-        
-        function clearError(input) {
-            input.classList.remove('error');
-            const errorElement = document.getElementById(`${input.id}-error`);
-            if (errorElement) {
-                errorElement.textContent = '';
-            }
-        }
-        
-        function showError(input, message) {
-            input.classList.add('error');
-            const errorElement = document.getElementById(`${input.id}-error`);
-            if (errorElement) {
-                errorElement.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
-            }
-        }
-        
-        function validateForm() {
-            let isValid = true;
-            
-            // Student ID validation
-            const studentId = document.getElementById('student_id').value.trim();
-            if (!studentId) {
-                showError(document.getElementById('student_id'), 'Student ID is required');
-                isValid = false;
-            }
-            
-            // Name validation
-            const name = document.getElementById('name').value.trim();
-            if (!name) {
-                showError(document.getElementById('name'), 'First name is required');
-                isValid = false;
-            }
-            
-            // Surname validation
-            const surname = document.getElementById('surname').value.trim();
-            if (!surname) {
-                showError(document.getElementById('surname'), 'Surname is required');
-                isValid = false;
-            }
-            
-            // Email validation
-            const email = document.getElementById('email').value.trim();
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!email) {
-                showError(document.getElementById('email'), 'Email is required');
-                isValid = false;
-            } else if (!emailRegex.test(email)) {
-                showError(document.getElementById('email'), 'Please enter a valid email address');
-                isValid = false;
-            }
-            
-            // Phone validation
-            const phone = document.getElementById('phone').value.trim();
-            if (!phone) {
-                showError(document.getElementById('phone'), 'Phone number is required');
-                isValid = false;
-            }
-            
-            // Grade validation
-            const grade = document.getElementById('grade').value;
-            if (!grade) {
-                showError(document.getElementById('grade'), 'Please select your grade');
-                isValid = false;
-            }
-            
-            // Password validation
-            const password = document.getElementById('password').value;
-            if (password.length < 6) {
-                showError(document.getElementById('password'), 'Password must be at least 6 characters');
-                isValid = false;
-            }
-            
-            // Terms validation
-            const terms = document.getElementById('terms').checked;
-            if (!terms) {
-                termsError.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please accept Terms & Privacy';
-                isValid = false;
-            } else {
-                termsError.textContent = '';
-            }
-            
-            return isValid;
-        }
-        
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            if (validateForm()) {
-                // Show loading state
-                submitBtn.classList.add('btn-loading');
-                submitBtn.disabled = true;
-                
-                // Simulate form submission
-                setTimeout(() => {
-                    showNotification('Account created successfully!', 'success');
-                    submitBtn.classList.remove('btn-loading');
-                    submitBtn.disabled = false;
-                    
-                    // In a real application, you would submit the form here
-                    // form.submit();
-                }, 2000);
-            }
-        });
-
-        // Password strength indicator
+        // Simple password strength indicator
         const passwordInput = document.getElementById('password');
         const strengthBar = document.getElementById('strength-bar');
         
         passwordInput.addEventListener('input', function() {
             const password = this.value;
-            const strength = checkPasswordStrength(password);
-            updateStrengthBar(strength);
-        });
-
-        function checkPasswordStrength(password) {
             let strength = 0;
+            
             if (password.length >= 8) strength++;
             if (password.match(/[a-z]/)) strength++;
             if (password.match(/[A-Z]/)) strength++;
             if (password.match(/[0-9]/)) strength++;
             if (password.match(/[^a-zA-Z0-9]/)) strength++;
-            return strength;
-        }
-
-        function updateStrengthBar(strength) {
+            
             strengthBar.className = 'strength-bar';
             if (strength <= 2) {
                 strengthBar.classList.add('strength-weak');
@@ -1109,7 +896,7 @@
             } else {
                 strengthBar.classList.add('strength-strong');
             }
-        }
+        });
 
         // Password visibility toggle
         const passwordToggle = document.getElementById('password-toggle');
@@ -1120,6 +907,15 @@
         });
 
         // Modal functionality
+        const termsModal = document.getElementById('terms-modal');
+        const privacyModal = document.getElementById('privacy-modal');
+        const termsLink = document.getElementById('terms-link');
+        const privacyLink = document.getElementById('privacy-link');
+        const termsClose = document.getElementById('terms-close');
+        const privacyClose = document.getElementById('privacy-close');
+        const termsAgree = document.getElementById('terms-agree');
+        const privacyAgree = document.getElementById('privacy-agree');
+
         termsLink.addEventListener('click', () => {
             termsModal.classList.add('active');
         });
@@ -1153,39 +949,6 @@
                 privacyModal.classList.remove('active');
             }
         });
-
-        // Notification system
-        function showNotification(message, type) {
-            // Remove any existing notifications
-            const existingNotifications = document.querySelectorAll('.notification');
-            existingNotifications.forEach(notification => {
-                notification.remove();
-            });
-            
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.innerHTML = `
-                <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
-                <span>${message}</span>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Trigger animation
-            setTimeout(() => {
-                notification.classList.add('show');
-            }, 10);
-            
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 300);
-            }, 5000);
-        }
     </script>
 </body>
 </html>

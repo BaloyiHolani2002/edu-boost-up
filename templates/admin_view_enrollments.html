@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - View Enrollments</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <h1>Enrollments Management</h1>
+
+    <table border="1" cellpadding="10" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Surname</th>
+                <th>Enrollment Days</th>
+                <th>Days Remaining</th>
+                <th>Status</th>
+                <th>Enrollment Date</th>
+                <th>Last Updated</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in enrollments %}
+            <tr>
+                <td>{{ e.student_id }}</td>
+                <td>{{ e.name }}</td>
+                <td>{{ e.surname }}</td>
+                <td>{{ e.enrollment_days }}</td>
+                <td>{{ e.days_remaining }}</td>
+                <td>{{ e.status }}</td>
+                <td>{{ e.enrollment_date }}</td>
+                <td>{{ e.last_updated }}</td>
+                <td>
+                    <form action="{{ url_for('add_enrollment_days') }}" method="POST" style="display:inline;">
+                        <input type="hidden" name="enrollment_id" value="{{ e.enrollment_id }}">
+                        <input type="number" name="additional_days" min="1" placeholder="Days" required>
+                        <button type="submit">Add Days</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

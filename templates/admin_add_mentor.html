@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Mentor</title>
+</head>
+<body>
+    <h1>Add New Mentor</h1>
+    <form action="{{ url_for('admin_add_mentor') }}" method="POST" enctype="multipart/form-data">
+    <label for="name">First Name:</label>
+    <input type="text" name="name" required><br><br>
+
+    <label for="surname">Surname:</label>
+    <input type="text" name="surname" required><br><br>
+
+    <label for="email">Email:</label>
+    <input type="email" name="email" required><br><br>
+
+    <label for="phone">Phone:</label>
+    <input type="text" name="phone"><br><br>
+
+    <label for="subject_speciality">Subject Speciality:</label>
+    <input type="text" name="subject_speciality"><br><br>
+
+    <label for="password">Password (default: changeme123):</label>
+    <input type="text" name="password"><br><br>
+
+    <label for="bio">Short Bio:</label>
+    <textarea name="bio" rows="4" cols="50"></textarea><br><br>
+
+    <label for="profile_image">Profile Image:</label>
+    <input type="file" name="profile_image" accept="image/*"><br><br>
+
+    <button type="submit">Add Mentor</button>
+</form>
+
+</body>
+</html>
