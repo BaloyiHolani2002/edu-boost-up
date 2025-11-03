@@ -1,16 +1,16 @@
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+# Standard library imports
 import os
 import json
 from datetime import datetime
+from functools import wraps
+
+# Third-party imports
+from flask import Flask, render_template, request, redirect, session, flash, jsonify, url_for
+from werkzeug.utils import secure_filename
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from flask import Flask, render_template, request, redirect, session, flash
-from psycopg2.extras import RealDictCursor
-from functools import wraps
-from werkzeug.utils import secure_filename
-from flask import request, redirect, flash
-from werkzeug.utils import secure_filename
 from flask_apscheduler import APScheduler
+
 
 app = Flask(__name__)
 app.secret_key = 'edu-boost-up-secret-key-2024'
@@ -993,9 +993,9 @@ def upload_pdf():
         cur = conn.cursor()
 
         cur.execute("""
-            INSERT INTO Content (mentor_id, title, description, subject, grade, pdf_file, file_name, file_size_mb)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        """, (session['mentor_id'], title, description, subject, grade, psycopg2.Binary(pdf_data), file_name, file_size_mb))
+    INSERT INTO Content (mentor_id, title, description, subject, grade, pdf_file, file_name, file_size_mb)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING content_id
+""", (session["mentor_id"], title, description, subject, grade, pdf_path, file_name, file_size_mb))
 
         conn.commit()
         cur.close()
@@ -1007,14 +1007,12 @@ def upload_pdf():
     return render_template('upload_pdf.html', grade=grade)
 
 UPLOAD_PDF_FOLDER = "static/uploads/pdfs"
-UPLOAD_VIDEO_FOLDER = "static/uploads/videos"
-
 
 @app.route("/employee/content/upload", methods=["GET", "POST"])
 @mentor_required
 def employee_content_upload():
 
-    grade = request.args.get("grade")   # ✅ Get grade from URL
+    grade = request.args.get("grade")
 
     if not grade:
         flash("Please select a grade first.", "warning")
@@ -1024,52 +1022,50 @@ def employee_content_upload():
         title = request.form["title"]
         description = request.form.get("description")
         subject = request.form["subject"]
+        video_link = request.form.get("video_link")  # ✅ New: Take video link input
 
         # ==== PDF Upload ====
         pdf_file = request.files.get("pdf_file")
-        pdf_path = None
         file_name = None
         file_size_mb = None
 
         if pdf_file and pdf_file.filename != "":
             file_name = secure_filename(pdf_file.filename)
-            os.makedirs("static/uploads/pdfs", exist_ok=True)  
-            pdf_path = os.path.join("static/uploads/pdfs/", file_name)
+            os.makedirs(UPLOAD_PDF_FOLDER, exist_ok=True)
+            pdf_path = os.path.join(UPLOAD_PDF_FOLDER, file_name)
             pdf_file.save(pdf_path)
             file_size_mb = round(os.path.getsize(pdf_path) / (1024 * 1024), 2)
+        else:
+            pdf_path = None
 
         conn = get_db_connection()
         cur = conn.cursor()
+
+        # Insert main content record
         cur.execute("""
             INSERT INTO Content (mentor_id, title, description, subject, grade, pdf_file, file_name, file_size_mb)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING content_id
-        """, (session["mentor_id"], title, description, subject, grade, None, file_name, file_size_mb))
+        """, (session["mentor_id"], title, description, subject, grade, pdf_path, file_name, file_size_mb))
+        
         content_id = cur.fetchone()[0]
         conn.commit()
 
-        # ==== MULTIPLE VIDEOS ====
-        video_files = request.files.getlist("video_files")
-        for video in video_files:
-            if video.filename != "":
-                v_name = secure_filename(video.filename)
-                os.makedirs("static/uploads/videos", exist_ok=True)
-                video_path = os.path.join("static/uploads/videos/", v_name)
-                video.save(video_path)
-                v_size = round(os.path.getsize(video_path) / (1024 * 1024), 2)
-
-                cur.execute("""
-                    INSERT INTO ContentRecord (content_id, file_url, file_size_mb)
-                    VALUES (%s, %s, %s)
-                """, (content_id, video_path, v_size))
+        # ==== Insert Video Link ====
+        if video_link:
+            cur.execute("""
+                INSERT INTO ContentRecord (content_id, file_link)
+                VALUES (%s, %s)
+            """, (content_id, video_link))
 
         conn.commit()
         cur.close()
         conn.close()
 
-        # ✅ Go to the success page
+        # ✅ Redirect to success confirmation page
         return redirect("/employee/content/uploaded")
 
     return render_template("upload_content.html", grade=grade)
+
 
 
 @app.route("/employee/content/uploaded")
