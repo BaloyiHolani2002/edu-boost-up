@@ -1392,12 +1392,10 @@ def upload_pdf():
 
     return render_template('upload_pdf.html', grade=grade)
 
-UPLOAD_PDF_FOLDER = "static/uploads/pdfs"
 
 @app.route("/employee/content/upload", methods=["GET", "POST"])
 @mentor_required
 def employee_content_upload():
-    
     grade = request.args.get("grade")
     
     if not grade:
@@ -1405,52 +1403,55 @@ def employee_content_upload():
         return redirect("/employee/dashboard")
 
     if request.method == "POST":
-        title = request.form["title"]
+        title = request.form.get("title")
         description = request.form.get("description")
-        subject = request.form["subject"]
-        video_link = request.form.get("video_link")  # ✅ New: Take video link input
+        subject = request.form.get("subject")
+        video_link = request.form.get("video_link")  # Optional video lesson link
 
-        # ==== PDF Upload ====
+        # ==== PDF Upload as BYTEA ====
         pdf_file = request.files.get("pdf_file")
+        pdf_bytes = None
         file_name = None
         file_size_mb = None
 
         if pdf_file and pdf_file.filename != "":
             file_name = secure_filename(pdf_file.filename)
-            os.makedirs(UPLOAD_PDF_FOLDER, exist_ok=True)
-            pdf_path = os.path.join(UPLOAD_PDF_FOLDER, file_name)
-            pdf_file.save(pdf_path)
-            file_size_mb = round(os.path.getsize(pdf_path) / (1024 * 1024), 2)
-        else:
-            pdf_path = None
+            pdf_bytes = pdf_file.read()
+            file_size_mb = round(len(pdf_bytes) / (1024 * 1024), 2)  # Convert to MB
 
-        conn = get_db_connection()
-        cur = conn.cursor()
+            if file_size_mb > 25:
+                flash("❌ PDF exceeds 25MB limit.", "danger")
+                return redirect(request.url)
 
-        # Insert main content record
-        file = request.files['pdf']
-        pdf_bytes = file.read()
-        cur.execute("""
-            INSERT INTO Content (mentor_id, title, description, subject, grade, pdf_file, file_name, file_size_mb)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING content_id
-        """, (session["mentor_id"], title, description, subject, grade, pdf_path, file_name, file_size_mb))
-        
-        content_id = cur.fetchone()[0]
-        conn.commit()
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
 
-        # ==== Insert Video Link ====
-        if video_link:
+            # Insert content record (PDF stored as BYTEA)
             cur.execute("""
-                INSERT INTO ContentRecord (content_id, file_link)
-                VALUES (%s, %s)
-            """, (content_id, video_link))
+                INSERT INTO Content (mentor_id, title, description, subject, grade, pdf_file, file_name, file_size_mb)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING content_id
+            """, (session["mentor_id"], title, description, subject, grade, pdf_bytes, file_name, file_size_mb))
 
-        conn.commit()
-        cur.close()
-        conn.close()
+            content_id = cur.fetchone()[0]
+            conn.commit()
 
-        # ✅ Redirect to success confirmation page
+            # Insert video lesson link if provided
+            if video_link:
+                cur.execute("""
+                    INSERT INTO ContentRecord (content_id, file_link)
+                    VALUES (%s, %s)
+                """, (content_id, video_link))
+                conn.commit()
+
+        finally:
+            cur.close()
+            conn.close()
+
+        flash("✅ Content uploaded successfully!", "success")
         return redirect("/employee/content/uploaded")
+
+    return render_template("upload_content.html", grade=grade)
 
     return render_template("upload_content.html", grade=grade)
 
