@@ -25,12 +25,16 @@
             --math: #ff6b6b;
             --accounting: #4ecdc4;
             --science: #45aaf2;
+            --text-light: #6c757d;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
 
         body {
             background-color: #f5f7fb;
             color: var(--dark);
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
         .container {
@@ -116,6 +120,7 @@
         .btn-primary:hover {
             background-color: #5a08a0;
             transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(114, 9, 183, 0.4);
         }
 
         .btn-outline {
@@ -142,6 +147,23 @@
             background-position: center;
             color: white;
             text-align: center;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
         }
 
         .hero h2 {
@@ -165,6 +187,19 @@
             font-weight: 600;
             margin-bottom: 1.5rem;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
         }
 
         /* Video Section */
@@ -186,14 +221,14 @@
             max-width: 800px;
             border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--shadow);
             transform: translateY(0);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .video-wrapper:hover {
             transform: translateY(-5px);
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-hover);
         }
 
         .video-wrapper video {
@@ -291,12 +326,17 @@
             background: white;
             border-radius: 15px;
             padding: 3rem 2rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
             max-width: 500px;
             margin: 0 auto;
             position: relative;
             overflow: hidden;
             border: 3px solid var(--primary);
+            transition: transform 0.3s ease;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
         }
 
         .pricing-badge {
@@ -320,7 +360,7 @@
 
         .price span {
             font-size: 1.5rem;
-            color: #6c757d;
+            color: var(--text-light);
         }
 
         .price-details {
@@ -358,7 +398,7 @@
         }
 
         .section-title p {
-            color: #6c757d;
+            color: var(--text-light);
             max-width: 700px;
             margin: 0 auto;
         }
@@ -377,15 +417,27 @@
             background: white;
             border-radius: 15px;
             padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            box-shadow: var(--shadow);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             text-align: center;
             border: 1px solid #e9ecef;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
         }
 
         .feature-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            box-shadow: var(--shadow-hover);
         }
 
         .feature-icon {
@@ -423,7 +475,7 @@
             background: white;
             border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            box-shadow: var(--shadow);
             transition: transform 0.3s ease;
             border: 1px solid #e9ecef;
         }
@@ -519,7 +571,7 @@
             background: white;
             border-radius: 15px;
             padding: 2.5rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            box-shadow: var(--shadow);
             border: 1px solid #e9ecef;
         }
 
@@ -565,7 +617,7 @@
             border-radius: 15px;
             padding: 2rem;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            box-shadow: var(--shadow);
             transition: transform 0.3s ease;
             border: 1px solid #e9ecef;
         }
@@ -586,6 +638,24 @@
             background: linear-gradient(135deg, var(--accent), var(--secondary));
             color: white;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.3;
+        }
+
+        .cta-content {
+            position: relative;
+            z-index: 1;
         }
 
         .cta h2 {
@@ -737,7 +807,6 @@
                 </div>
                 <nav>
                     <ul>
-                        <li><a href="#video">Video</a></li>
                         <li><a href="#pricing">Pricing</a></li>
                         <li><a href="#subjects">Subjects</a></li>
                     </ul>
@@ -753,57 +822,46 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
-            <div class="trial-badge">
-                <i class="fas fa-star"></i> 20 DAYS FREE TRIAL
+            <div class="hero-content">
+                <div class="trial-badge">
+                    <i class="fas fa-star"></i> 20 DAYS FREE TRIAL
+                </div>
+                <h2>Empowering Grade 10-12 Students to Excel</h2>
+                <p>Access quality learning materials, request extra classes, and get personalized support in Mathematics,
+                    Accounting, and Physical Science.</p>
+                <a href="/signup" class="btn btn-primary btn-large">Start Your Free Trial</a>
             </div>
-            <h2>Empowering Grade 10-12 Students to Excel</h2>
-            <p>Access quality learning materials, request extra classes, and get personalized support in Mathematics,
-                Accounting, and Physical Science.</p>
-            <a href="/signup" class="btn btn-primary btn-large">Start Your Free Trial</a>
         </div>
     </section>
 
-    <!-- Video Section -->
-    <section class="video-section" id="video">
+    <!-- Features Section -->
+    <section class="features">
         <div class="container">
             <div class="section-title">
-                <h2>See Edu Boost Up in Action</h2>
-                <p>Watch how our platform helps students improve their academic performance</p>
+                <h2>Why Choose Edu Boost Up?</h2>
+                <p>We provide comprehensive learning solutions designed specifically for South African high school students</p>
             </div>
-            <div class="video-container">
-                <div class="video-wrapper">
-                    <video id="promo-video"
-                        poster="https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80">
-                        <source
-                            src="https://assets.mixkit.co/videos/preview/mixkit-group-of-students-studying-online-46407-large.mp4"
-                            type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                    <div class="video-overlay" id="video-overlay">
-                        <div class="play-button" id="play-button">
-                            <i class="fas fa-play"></i>
-                        </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-book-open"></i>
                     </div>
+                    <h3>Comprehensive Materials</h3>
+                    <p>Access a wide range of study guides, practice problems, and exam preparation resources.</p>
                 </div>
-                <p>Experience how Edu Boost Up transforms learning for high school students</p>
-
-                <!-- Social Media Share -->
-                <div class="social-share">
-                    <a href="#" class="social-btn facebook">
-                        <i class="fab fa-facebook-f"></i>
-                    </a>
-                    <a href="#" class="social-btn twitter">
-                        <i class="fab fa-twitter"></i>
-                    </a>
-                    <a href="#" class="social-btn linkedin">
-                        <i class="fab fa-linkedin-in"></i>
-                    </a>
-                    <a href="#" class="social-btn whatsapp">
-                        <i class="fab fa-whatsapp"></i>
-                    </a>
-                    <a href="#" class="social-btn twitter">
-                        <i class="fab fa-file-invoice-dollar"></i>
-                    </a>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h3>Expert Mentors</h3>
+                    <p>Learn from experienced educators who provide personalized guidance and support.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-clock"></i>
+                    </div>
+                    <h3>Flexible Learning</h3>
+                    <p>Study at your own pace with 24/7 access to all learning materials and resources.</p>
                 </div>
             </div>
         </div>
@@ -834,7 +892,6 @@
             </div>
         </div>
     </section>
-
 
     <!-- Subjects Section -->
     <section class="subjects" id="subjects">
@@ -893,14 +950,15 @@
         </div>
     </section>
 
-
     <!-- CTA Section -->
     <section class="cta">
         <div class="container">
-            <h2>Ready to Boost Your Academic Performance?</h2>
-            <p>Join thousands of students who are already improving their grades with Edu Boost Up. Start your 20-day
-                free trial today!</p>
-            <a href="/signup" class="btn btn-outline btn-large">Start Free Trial</a>
+            <div class="cta-content">
+                <h2>Ready to Boost Your Academic Performance?</h2>
+                <p>Join thousands of students who are already improving their grades with Edu Boost Up. Start your 20-day
+                    free trial today!</p>
+                <a href="/signup" class="btn btn-outline btn-large">Start Free Trial</a>
+            </div>
         </div>
     </section>
 
@@ -911,11 +969,24 @@
                 <div class="footer-column">
                     <h3>Edu Boost Up</h3>
                     <p>Empowering Grade 10-12 students with quality educational resources and personalized support.</p>
+                    <div class="social-share">
+                        <a href="#" class="social-btn facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="social-btn twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="social-btn linkedin">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="#" class="social-btn whatsapp">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </div>
                 </div>
                 <div class="footer-column">
                     <h3>Quick Links</h3>
                     <ul>
-                        <li><a href="#video">Video</a></li>
                         <li><a href="#pricing">Pricing</a></li>
                         <li><a href="#subjects">Subjects</a></li>
                     </ul>
@@ -933,7 +1004,7 @@
                     <h3>Contact</h3>
                     <ul>
                         <li><i class="fas fa-envelope"></i> info@eduboostup.com</li>
-                        <li><i class="fas fa-phone"></i> +1 (555) 123-4567</li>
+                        <li><i class="fas fa-phone"></i> +27 (0) 12 345 6789</li>
                         <li><i class="fas fa-map-marker-alt"></i> South Africa</li>
                     </ul>
                 </div>
@@ -1066,20 +1137,22 @@
             const videoOverlay = document.getElementById('video-overlay');
             const playButton = document.getElementById('play-button');
 
-            playButton.addEventListener('click', function () {
-                video.play();
-                videoOverlay.classList.add('hidden');
-            });
-
-            video.addEventListener('click', function () {
-                if (video.paused) {
+            if (playButton) {
+                playButton.addEventListener('click', function () {
                     video.play();
                     videoOverlay.classList.add('hidden');
-                } else {
-                    video.pause();
-                    videoOverlay.classList.remove('hidden');
-                }
-            });
+                });
+
+                video.addEventListener('click', function () {
+                    if (video.paused) {
+                        video.play();
+                        videoOverlay.classList.add('hidden');
+                    } else {
+                        video.pause();
+                        videoOverlay.classList.remove('hidden');
+                    }
+                });
+            }
         });
     </script>
 </body>

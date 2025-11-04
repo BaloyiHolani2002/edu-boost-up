@@ -11,6 +11,12 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from flask_apscheduler import APScheduler
 from flask import send_from_directory
+from flask import send_from_directory, flash, redirect, url_for, request
+from psycopg2.extras import RealDictCursor
+from flask import send_file, flash, redirect, request, url_for
+from io import BytesIO
+from psycopg2.extras import RealDictCursor
+
 
 app = Flask(__name__)
 app.secret_key = 'edu-boost-up-secret-key-2024'
@@ -242,7 +248,7 @@ def student_dashboard():
         # Create new 20 day access
         cur.execute("""
             INSERT INTO Enrollment (student_id, enrollment_days, days_remaining, status)
-            VALUES (%s, 20, 20, 'active')
+            VALUES (%s, 0, 0, 'active')
             RETURNING days_remaining
         """, (student_id,))
         enroll = cur.fetchone()
@@ -476,17 +482,34 @@ def student_courses():
     if 'student_id' not in session:
         return redirect('/login')
 
+    student_id = session['student_id']
+
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
-    # Get unique subjects from Content table for the student's grade (optional: filter by grade if needed)
+    # Check remaining days
+    cur.execute("""
+        SELECT days_remaining 
+        FROM Enrollment
+        WHERE student_id = %s AND status = 'active'
+        LIMIT 1
+    """, (student_id,))
+    enrollment = cur.fetchone()
+
+    # If no active enrollment or 0 days remaining -> Send to payment page
+    if not enrollment or enrollment['days_remaining'] <= 0:
+        cur.close()
+        conn.close()
+        return redirect('/student/payment?expired=1')
+
+    # Get available subjects
     cur.execute("""
         SELECT DISTINCT subject 
         FROM Content
         WHERE subject IS NOT NULL
         ORDER BY subject
     """)
-    subjects = cur.fetchall()  # List of dictionaries with 'subject' key
+    subjects = cur.fetchall()
 
     cur.close()
     conn.close()
@@ -530,6 +553,47 @@ def course_contents(subject):
 
     return render_template("course_contents.html", subject=subject, contents=contents, content_links=content_links)
 
+@app.route('/download/<filename>')
+def download_pdf(filename):
+    """Serve PDF files for download"""
+    try:
+        # Assuming PDFs are stored in a 'pdfs' folder within static
+        return send_from_directory('static/pdfs', filename, as_attachment=True)
+    except FileNotFoundError:
+        flash('File not found', 'error')
+        return redirect(request.referrer or url_for('student_dashboard'))
+
+
+@app.route('/view/content/<int:content_id>')
+def view_content_pdf(content_id):
+    if 'student_id' not in session:
+        return redirect('/login')
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    cur.execute("""
+        SELECT pdf_file, file_name
+        FROM Content
+        WHERE content_id = %s
+    """, (content_id,))
+
+    file_data = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    if not file_data or not file_data['pdf_file']:
+        flash("The requested PDF file is not available.", "error")
+        return redirect(request.referrer or url_for('student_dashboard'))
+
+    # Convert BYTEA to stream and return to browser
+    return send_file(
+        BytesIO(file_data['pdf_file']),
+        mimetype='application/pdf',
+        download_name=file_data['file_name'],
+        as_attachment=False  # change to True if you want "Download" instead of "View"
+    )
 
 
 #signup is done
@@ -1364,6 +1428,8 @@ def employee_content_upload():
         cur = conn.cursor()
 
         # Insert main content record
+        file = request.files['pdf']
+        pdf_bytes = file.read()
         cur.execute("""
             INSERT INTO Content (mentor_id, title, description, subject, grade, pdf_file, file_name, file_size_mb)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING content_id
