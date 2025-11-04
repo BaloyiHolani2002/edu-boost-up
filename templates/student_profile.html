@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Update Profile</h2>
+<form method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label for="name" class="form-label">First Name</label>
+        <input type="text" name="name" class="form-control" value="{{ student.name }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="surname" class="form-label">Surname</label>
+        <input type="text" name="surname" class="form-control" value="{{ student.surname }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="email" class="form-label">Email (cannot change)</label>
+        <input type="email" class="form-control" value="{{ student.email }}" disabled>
+    </div>
+    <div class="mb-3">
+        <label for="phone" class="form-label">Phone</label>
+        <input type="text" name="phone" class="form-control" value="{{ student.phone }}">
+    </div>
+    <div class="mb-3">
+        <label for="grade" class="form-label">Grade</label>
+        <input type="text" name="grade" class="form-control" value="{{ student.grade }}">
+    </div>
+    <div class="mb-3">
+        <label for="profile_image" class="form-label">Profile Image</label>
+        <input type="file" name="profile_image" class="form-control">
+        {% if student.profile_image %}
+        <img src="{{ url_for('static', filename=student.profile_image) }}" alt="Profile Image" width="100">
+        {% endif %}
+    </div>
+    <button type="submit" class="btn btn-primary">Update Profile</button>
+</form>
+{% endblock %}

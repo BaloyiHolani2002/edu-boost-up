@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Classes</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="p-4">
+    <div class="container">
+        <h2>Your Classes</h2>
+        <hr>
+
+        {% if classes %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Topic</th>
+                    <th>Type</th>
+                    <th>Start Time</th>
+                    <th>Duration</th>
+                    <th>Mentor</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for class in classes %}
+                <tr>
+                    <td>{{ class.title }}</td>
+                    <td>{{ class.topic }}</td>
+                    <td>{{ class.type }}</td>
+                    <td>{{ class.start_time }}</td>
+                    <td>{{ class.duration }} mins</td>
+                    <td>{{ class.mentor_name }} {{ class.mentor_surname }}</td>
+                    <td>
+                        {% if class.link %}
+                        <a href="{{ class.link }}" target="_blank">Open</a>
+                        {% else %}
+                        No link
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No classes available.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

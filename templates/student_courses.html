@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>My Courses</h2>
+
+<div class="row">
+    {% for subj in subjects %}
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ subj.subject }}</h5>
+                <p class="card-text">Explore all content for {{ subj.subject }}.</p>
+                <a href="/student/courses/{{ subj.subject }}/contents" class="btn btn-primary">Get Contents</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<a href="/student/dashboard" class="btn btn-secondary mt-3">Back to Dashboard</a>
+{% endblock %}

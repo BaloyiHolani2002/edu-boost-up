@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from flask_apscheduler import APScheduler
-
+from flask import send_from_directory
 
 app = Flask(__name__)
 app.secret_key = 'edu-boost-up-secret-key-2024'
@@ -153,6 +153,14 @@ def init_db():
 def index():
     return render_template('index.html')
 
+UPLOAD_FOLDER = 'uploads'  # at the root of your project
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)  # create if not exists
+
+@app.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    return send_from_directory('uploads', filename)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -164,52 +172,364 @@ def login():
             try:
                 cur = conn.cursor(cursor_factory=RealDictCursor)
                 
-                # Check in Student table
-                cur.execute(
-                    "SELECT * FROM Student WHERE email = %s AND password = %s AND status = 'active'",
-                    (email, password)
-                )
+                # Check Student Login
+                cur.execute("""
+                    SELECT * FROM Student 
+                    WHERE email = %s AND password = %s AND status = 'active'
+                """, (email, password))
                 student = cur.fetchone()
                 
                 if student:
-                    session['user_id'] = student['student_id']
-                    session['user_name'] = f"{student['name']} {student['surname']}"
-                    session['user_role'] = 'student'
-                    session['user_email'] = student['email']
+                    session['student_id'] = student['student_id']
+                    session['student_name'] = f"{student['name']} {student['surname']}"
                     session['grade'] = student['grade']
+                    session['user_role'] = 'student'   # ✅ ADD THIS
                     cur.close()
                     conn.close()
-                    return redirect('/dashboard')
+                    return redirect('/student/dashboard')
                 
-                # Check in Admin table
-                cur.execute(
-                    "SELECT * FROM Admin WHERE email = %s AND password = %s",
-                    (email, password)
-                )
+                # Check Admin Login
+                cur.execute("""
+                    SELECT * FROM Admin 
+                    WHERE email = %s AND password = %s
+                """, (email, password))
                 admin = cur.fetchone()
                 
                 if admin:
-                    session['user_id'] = admin['admin_id']
-                    session['user_name'] = admin['name']
-                    session['user_role'] = admin['role']
-                    session['user_email'] = admin['email']
+                    session['admin_id'] = admin['admin_id']
+                    session['admin_name'] = admin['name']
+                    session['role'] = admin['role']
                     cur.close()
                     conn.close()
-                    return redirect('/dashboard')
-                
+                    return redirect('/admin/dashboard')
+
                 cur.close()
                 conn.close()
-                return render_template('studentLogin.html', error='Invalid credentials')
+                return render_template('studentLogin.html', error='Incorrect Email or Password')
                 
             except Exception as e:
-                print(f"Login error: {e}")
-                if conn:
-                    conn.close()
-                return render_template('studentLogin.html', error='Database error')
-        
-        return render_template('studentLogin.html', error='Database connection failed')
+                print("LOGIN ERROR:", e)
+                return render_template('studentLogin.html', error='Server Error, Please Try Again')
+
+        return render_template('studentLogin.html', error='Database Connection Failed')
     
     return render_template('studentLogin.html')
+
+@app.route("/student/dashboard")
+def student_dashboard():
+    if 'student_id' not in session:
+        return redirect('/login')
+
+    student_id = session['student_id']
+    grade = session['grade']
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    # Get student info
+    cur.execute("SELECT * FROM Student WHERE student_id = %s", (student_id,))
+    student = cur.fetchone()
+
+    # Check enrollment / create if missing
+    cur.execute("""
+        SELECT days_remaining FROM Enrollment 
+        WHERE student_id = %s AND status = 'active'
+        ORDER BY enrollment_id DESC LIMIT 1
+    """, (student_id,))
+    enroll = cur.fetchone()
+
+    if not enroll:
+        # Create new 20 day access
+        cur.execute("""
+            INSERT INTO Enrollment (student_id, enrollment_days, days_remaining, status)
+            VALUES (%s, 20, 20, 'active')
+            RETURNING days_remaining
+        """, (student_id,))
+        enroll = cur.fetchone()
+        conn.commit()
+
+    days_remaining = enroll['days_remaining']
+
+    # Get mentors
+    cur.execute("""
+        SELECT name, surname, subject_speciality, bio 
+        FROM Mentor WHERE status='active'
+    """)
+    mentors = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return render_template("student_dashboard.html", 
+                           student=student, 
+                           mentors=mentors, 
+                           days_remaining=days_remaining)
+
+@app.route("/student/classes")
+def student_classes():
+    if 'student_id' not in session:
+        return redirect('/login')
+
+    grade = session.get('grade')
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    cur.execute("""
+        SELECT C.class_id, C.title, C.topic, C.type, C.start_time,
+               C.duration, C.upload_date, C.link,
+               M.name AS mentor_name, M.surname AS mentor_surname
+        FROM Class C
+        LEFT JOIN Mentor M ON C.mentor_id = M.mentor_id
+        WHERE C.grade = %s
+        ORDER BY C.upload_date DESC;
+    """, (grade,))
+
+    classes = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return render_template("student_classes.html", classes=classes)
+
+@app.route("/student/request", methods=['GET', 'POST'])
+def student_request():
+    if 'student_id' not in session:
+        return redirect('/login')
+
+    student_id = session['student_id']
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    # Fetch all active mentors
+    cur.execute("SELECT mentor_id, name, surname FROM Mentor WHERE status='active' ORDER BY name")
+    mentors = cur.fetchall()
+
+    if request.method == 'POST':
+        mentor_id = request.form.get('mentor_id')
+        topic = request.form.get('topic')
+        message = request.form.get('message')
+        request_type = request.form.get('request_type')
+        pdf_file = None
+
+        # Handle PDF upload
+        if 'pdf' in request.files:
+            file = request.files['pdf']
+            if file.filename != '':
+                filename = secure_filename(file.filename)
+                pdf_file = os.path.join(UPLOAD_FOLDER, filename)
+                file.save(pdf_file)  # now it will work safely
+
+        # Insert into Request table
+        cur.execute("""
+            INSERT INTO Request (student_id, mentor_id, topic, message, request_type, pdf_url)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (student_id, mentor_id, topic, message, request_type, pdf_file))
+        conn.commit()
+
+        cur.close()
+        conn.close()
+        # Redirect to a success page or show flash message
+        return redirect('/student/dashboard')
+    cur.close()
+    conn.close()
+    return render_template("student_request.html", mentors=mentors)
+
+
+    if 'student_id' not in session:
+        return redirect('/login')
+
+    student_id = session['student_id']
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    # Fetch all active mentors for dropdown
+    cur.execute("SELECT mentor_id, name, surname FROM Mentor WHERE status='active' ORDER BY name")
+    mentors = cur.fetchall()
+
+    if request.method == 'POST':
+        mentor_id = request.form.get('mentor_id')
+        topic = request.form.get('topic')
+        message = request.form.get('message')
+        request_type = request.form.get('request_type')
+        pdf_file = None
+
+        # handle pdf upload if any
+        if 'pdf' in request.files:
+            file = request.files['pdf']
+            if file.filename != '':
+                pdf_file = f"uploads/{file.filename}"
+                file.save(pdf_file)  # make sure "uploads" folder exists
+
+        # Insert into Request table
+        cur.execute("""
+            INSERT INTO Request (student_id, mentor_id, topic, message, request_type, pdf)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (student_id, mentor_id, topic, message, request_type, pdf_file))
+        conn.commit()
+
+        cur.close()
+        conn.close()
+        return render_template("student_request.html", mentors=mentors, success="Request sent successfully!")
+
+    cur.close()
+    conn.close()
+    return render_template("student_request.html", mentors=mentors)
+
+@app.route("/student/enrollment")
+def student_enrollment():
+    if 'student_id' not in session:
+        return redirect('/login')
+
+    student_id = session['student_id']
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    # Fetch enrollments for the student (without class info)
+    cur.execute("""
+        SELECT enrollment_id, enrollment_days, days_remaining, enrollment_date, status
+        FROM Enrollment
+        WHERE student_id = %s
+        ORDER BY enrollment_date DESC
+    """, (student_id,))
+
+    enrollments = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    # Payment instructions (update with your banking details)
+    payment_info = {
+        "bank_name": "Your Bank Name",
+        "account_name": "Edu Boost Up",
+        "account_number": "1234567890",
+        "reference": "Use your Student ID as reference"
+    }
+
+    return render_template(
+        "student_enrollment.html",
+        enrollments=enrollments,
+        payment_info=payment_info
+    )
+
+@app.route("/student/profile", methods=['GET', 'POST'])
+def student_profile():
+    if 'student_id' not in session:
+        return redirect('/login')
+
+    student_id = session['student_id']
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    # Fetch current student info
+    cur.execute("SELECT * FROM Student WHERE student_id = %s", (student_id,))
+    student = cur.fetchone()
+
+    if request.method == 'POST':
+        # Get updated fields from form
+        name = request.form.get('name')
+        surname = request.form.get('surname')
+        phone = request.form.get('phone')
+        grade = request.form.get('grade')
+        profile_image = student['profile_image']  # default to existing
+
+        # Handle profile image upload
+        if 'profile_image' in request.files:
+            file = request.files['profile_image']
+            if file.filename != '':
+                filename = secure_filename(file.filename)
+                profile_image_path = os.path.join(UPLOAD_FOLDER, filename)
+                file.save(profile_image_path)
+                profile_image = profile_image_path
+
+        # Update student info (excluding id and email)
+        cur.execute("""
+            UPDATE Student
+            SET name = %s,
+                surname = %s,
+                phone = %s,
+                grade = %s,
+                profile_image = %s,
+                join_date = join_date,  -- keep existing join_date
+                status = status         -- keep existing status
+            WHERE student_id = %s
+        """, (name, surname, phone, grade, profile_image, student_id))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        # Update session info
+        session['student_name'] = f"{name} {surname}"
+
+        return redirect('/student/dashboard')
+
+    cur.close()
+    conn.close()
+    return render_template("student_profile.html", student=student)
+
+@app.route("/student/dashboard/courses")
+def student_courses():
+    if 'student_id' not in session:
+        return redirect('/login')
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    # Get unique subjects from Content table for the student's grade (optional: filter by grade if needed)
+    cur.execute("""
+        SELECT DISTINCT subject 
+        FROM Content
+        WHERE subject IS NOT NULL
+        ORDER BY subject
+    """)
+    subjects = cur.fetchall()  # List of dictionaries with 'subject' key
+
+    cur.close()
+    conn.close()
+    return render_template("student_courses.html", subjects=subjects)
+
+@app.route("/student/courses/<string:subject>/contents")
+def course_contents(subject):
+    if 'student_id' not in session:
+        return redirect('/login')
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    # Get all content for the selected subject with mentor info
+    cur.execute("""
+        SELECT C.content_id, C.title, C.description, C.type, 
+               C.pdf_file, C.file_name, C.file_size_mb, C.upload_date, 
+               M.name AS mentor_name, M.surname AS mentor_surname
+        FROM Content C
+        LEFT JOIN Mentor M ON C.mentor_id = M.mentor_id
+        WHERE C.subject = %s
+        ORDER BY C.upload_date DESC
+    """, (subject,))
+    
+    contents = cur.fetchall()
+
+    # Get associated file links from ContentRecord
+    content_links = {}
+    for content in contents:
+        cur.execute("""
+            SELECT file_link, upload_date 
+            FROM ContentRecord 
+            WHERE content_id = %s
+            ORDER BY upload_date DESC
+        """, (content['content_id'],))
+        links = cur.fetchall()
+        content_links[content['content_id']] = links
+
+    cur.close()
+    conn.close()
+
+    return render_template("course_contents.html", subject=subject, contents=contents, content_links=content_links)
+
 
 
 #signup is done
@@ -365,6 +685,8 @@ def signup():
     
     # GET request - show signup form
     return render_template('signup.html')
+
+
 
 # You can call this function daily using:
 # reduce_enrollment_days()
@@ -1011,9 +1333,9 @@ UPLOAD_PDF_FOLDER = "static/uploads/pdfs"
 @app.route("/employee/content/upload", methods=["GET", "POST"])
 @mentor_required
 def employee_content_upload():
-
+    
     grade = request.args.get("grade")
-
+    
     if not grade:
         flash("Please select a grade first.", "warning")
         return redirect("/employee/dashboard")
@@ -1065,6 +1387,98 @@ def employee_content_upload():
         return redirect("/employee/content/uploaded")
 
     return render_template("upload_content.html", grade=grade)
+
+@app.route("/employee/requests")
+def employee_requests():
+    # Ensure mentor or admin is logged in
+    if 'mentor_id' not in session and 'admin_id' not in session:
+        return redirect("/mentor-login")
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    # Fetch all requests with student info
+    cur.execute("""
+    SELECT R.request_id, R.topic, R.message, R.request_type, R.status, R.created_at, R.pdf_url,
+           S.name AS student_name, S.surname AS student_surname, S.phone AS student_email
+    FROM Request R
+    LEFT JOIN Student S ON R.student_id = S.student_id::varchar
+    ORDER BY R.created_at DESC
+""")
+    requests = cur.fetchall()
+
+    cur.close()
+    conn.close()
+    return render_template("employee_requests.html", requests=requests)
+
+
+@app.route("/employee/profile/edit", methods=["GET", "POST"])
+def employee_profile_edit():
+    if 'mentor_id' not in session:
+        return redirect('/mentor-login')
+
+    mentor_id = session['mentor_id']
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    if request.method == "POST":
+        name = request.form.get("name")
+        surname = request.form.get("surname")
+        phone = request.form.get("phone")
+        subject_speciality = request.form.get("subject_speciality")
+        bio = request.form.get("bio")
+
+        cur.execute("""
+            UPDATE Mentor
+            SET name = %s, surname = %s, phone = %s, subject_speciality = %s, bio = %s
+            WHERE mentor_id = %s
+        """, (name, surname, phone, subject_speciality, bio, mentor_id))
+        conn.commit()
+
+        cur.close()
+        conn.close()
+        return redirect("/employee/dashboard")
+
+    # Load existing data
+    cur.execute("SELECT * FROM Mentor WHERE mentor_id = %s", (mentor_id,))
+    mentor = cur.fetchone()
+
+    cur.close()
+    conn.close()
+    return render_template("employee_profile_edit.html", mentor=mentor)
+
+@app.route("/employee/profile/password", methods=["GET", "POST"])
+def employee_change_password():
+    if 'mentor_id' not in session:
+        return redirect('/mentor-login')
+
+    mentor_id = session['mentor_id']
+
+    if request.method == "POST":
+        current_password = request.form.get("current_password")
+        new_password = request.form.get("new_password")
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        cur.execute("SELECT password FROM Mentor WHERE mentor_id = %s", (mentor_id,))
+        db_password = cur.fetchone()[0]
+
+        # No hashing → direct comparison
+        if db_password != current_password:
+            cur.close()
+            conn.close()
+            return render_template("employee_change_password.html", error="Current password incorrect")
+
+        cur.execute("UPDATE Mentor SET password = %s WHERE mentor_id = %s", (new_password, mentor_id))
+        conn.commit()
+
+        cur.close()
+        conn.close()
+        return redirect("/employee/dashboard")
+
+    return render_template("employee_change_password.html")
 
 
 

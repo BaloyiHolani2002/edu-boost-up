@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Request - Edu Boost Up</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="p-4">
+    <div class="container">
+        <h2>Send Request to Mentor</h2>
+        <hr>
+
+        {% if success %}
+        <div class="alert alert-success">{{ success }}</div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="mentor_id" class="form-label">Select Mentor</label>
+                <select class="form-select" name="mentor_id" id="mentor_id" required>
+                    <option value="" disabled selected>-- Choose Mentor --</option>
+                    {% for m in mentors %}
+                    <option value="{{ m.mentor_id }}">{{ m.name }} {{ m.surname }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="topic" class="form-label">Topic</label>
+                <input type="text" class="form-control" name="topic" id="topic" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="request_type" class="form-label">Request Type</label>
+                <select class="form-select" name="request_type" id="request_type" required>
+                    <option value="lesson">Lesson</option>
+                    <option value="clarification">Clarification</option>
+                    <option value="material">Study Material</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="message" class="form-label">Message</label>
+                <textarea class="form-control" name="message" id="message" rows="4" required></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="pdf" class="form-label">Attach PDF (optional)</label>
+                <input type="file" class="form-control" name="pdf" id="pdf" accept=".pdf">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Send Request</button>
+        </form>
+    </div>
+</body>
+</html>

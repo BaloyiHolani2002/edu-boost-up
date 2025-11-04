@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>My Enrollment & Days Remaining</h2>
+
+{% if enrollments %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Days Remaining</th>
+            <th>Status</th>
+            <th>Enrollment Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for e in enrollments %}
+        <tr>
+            <td>{{ e.days_remaining }}</td>
+            <td>{{ e.status }}</td>
+            <td>{{ e.enrollment_date }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="alert alert-info mt-4">
+    <h5>Payment Instructions</h5>
+    <p>To renew or add more days, please make payment using the following details:</p>
+    <ul>
+        <li>Bank: {{ payment_info.bank_name }}</li>
+        <li>Account Name: {{ payment_info.account_name }}</li>
+        <li>Account Number: {{ payment_info.account_number }}</li>
+        <li>Reference: {{ payment_info.reference }}</li>
+    </ul>
+    <p>After payment, please allow up to 24 hours for your days to be updated. If your days are not added after 24 hours, contact the admin.</p>
+</div>
+
+{% else %}
+<p>You do not have any active enrollments yet.</p>
+{% endif %}
+
+{% endblock %}

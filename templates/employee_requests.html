@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>All Student Requests</h2>
+
+{% if requests %}
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Student</th>
+            <th>Email</th>
+            <th>Topic</th>
+            <th>Message</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Created At</th>
+            <th>PDF</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in requests %}
+        <tr>
+            <td>{{ r.student_name }} {{ r.student_surname }}</td>
+            <td>{{ r.student_email }}</td>
+            <td>{{ r.topic }}</td>
+            <td>{{ r.message }}</td>
+            <td>{{ r.request_type }}</td>
+            <td>{{ r.status }}</td>
+            <td>{{ r.created_at.strftime('%Y-%m-%d') }}</td>
+            <td>
+                {% if r.pdf_url %}
+                <a href="{{ url_for('static', filename=r.pdf_url) }}" download class="btn btn-sm btn-info">
+                    Download
+                </a>
+                {% else %}
+                N/A
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No requests found.</p>
+{% endif %}
+
+<a href="/employee/dashboard" class="btn btn-primary mt-3">Back to Dashboard</a>
+{% endblock %}

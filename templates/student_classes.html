@@ -1,0 +1,48 @@
+{% extends "student_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2 class="mb-3">📚 Your Classes</h2>
+
+    {% if classes %}
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Title</th>
+                <th>Topic</th>
+                <th>Type</th>
+                <th>Start Time</th>
+                <th>Duration</th>
+                <th>Mentor</th>
+                <th>Join / View</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for class in classes %}
+            <tr>
+                <td>{{ class.title }}</td>
+                <td>{{ class.topic }}</td>
+                <td>{{ class.type }}</td>
+                <td>{{ class.start_time }}</td>
+                <td>{{ class.duration }} min</td>
+                <td>{{ class.mentor_name }} {{ class.mentor_surname }}</td>
+                <td>
+                    {% if class.link %}
+                    <a href="{{ class.link }}" target="_blank" class="btn btn-primary btn-sm">
+                        Join Class
+                    </a>
+                    {% else %}
+                    <span class="text-muted">No link</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="alert alert-info">No classes uploaded for your grade yet.</p>
+    {% endif %}
+
+</div>
+{% endblock %}

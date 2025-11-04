@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>{{ subject }} - Course Contents</h2>
+
+{% if contents %}
+<ul class="list-group mb-3">
+    {% for content in contents %}
+    <li class="list-group-item">
+        <h5>{{ content.title }}</h5>
+        <p>{{ content.description }}</p>
+        <p>
+            <strong>Type:</strong> {{ content.type }} | 
+            <strong>Uploaded by:</strong> {{ content.mentor_name }} {{ content.mentor_surname }} | 
+            <strong>Uploaded on:</strong> {{ content.upload_date.strftime('%Y-%m-%d') }}
+        </p>
+
+        <!-- PDF file -->
+        {% if content.pdf_url %}
+<p>
+    <a href="{{ url_for('static', filename=content.pdf_url) }}" 
+       download="{{ content.file_name or 'file.pdf' }}" 
+       class="btn btn-sm btn-info">
+        Download PDF
+    </a>
+</p>
+{% endif %}
+
+        <!-- Video / external links -->
+        {% if content_links[content.content_id] %}
+        <p><strong>Resources:</strong></p>
+        <ul>
+            {% for link in content_links[content.content_id] %}
+            <li>
+                <a href="{{ link.file_link }}" target="_blank">
+                    {{ link.file_link }} (uploaded: {{ link.upload_date.strftime('%Y-%m-%d') }})
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No content available for this course yet.</p>
+{% endif %}
+
+<a href="/student/dashboard/courses" class="btn btn-secondary">Back to Courses</a>
+<a href="/student/dashboard" class="btn btn-primary">Back to Dashboard</a>
+{% endblock %}
