@@ -1410,9 +1410,7 @@ def employee_content_upload():
 
         # ==== PDF Upload as BYTEA ====
         pdf_file = request.files.get("pdf_file")
-        pdf_bytes = None
-        file_name = None
-        file_size_mb = None
+        
 
         if pdf_file and pdf_file.filename != "":
             file_name = secure_filename(pdf_file.filename)
