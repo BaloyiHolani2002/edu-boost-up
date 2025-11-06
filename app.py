@@ -810,9 +810,9 @@ def signup():
             return render_template('singuperror.html', error_message="Could not determine age from ID")
 
         # Age validation
-        if age < 14 or age > 20:
+        if age < 13 or age > 22:
             return render_template('singuperror.html', 
-                                   error_message=f"You must be between 14 and 20 years old. Your age: {age}")
+                                   error_message=f"You must be between 13 and 22 years old. Your age: {age}")
 
         # Grade validation
         try:
@@ -960,7 +960,7 @@ def scheduled_reduce_days():
     reduce_enrollment_days()
 
 
-    
+
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
