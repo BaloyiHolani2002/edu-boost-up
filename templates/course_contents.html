@@ -2,6 +2,9 @@
 
 {% block content %}
 <div class="course-contents-container">
+    <div class="logo">
+            <img src="/static/images/edo_logo.png.jpeg" alt="Edu Boost Up Logo">
+          </div>
     <div class="course-header">
         <h1><i class="fas fa-book"></i> {{ subject }} - Course Contents</h1>
         <p class="course-subtitle">Click on lesson headings to access learning materials</p>
@@ -40,7 +43,7 @@
 
                 <div class="resources-section">
                     <!-- PDF Download Section -->
-                    {% if content.pdf_file %}
+                    {% if content.file_url %}
                     <div class="resource-category">
                         <h4><i class="fas fa-file-pdf"></i> Download Study Materials</h4>
                         <div class="download-options">

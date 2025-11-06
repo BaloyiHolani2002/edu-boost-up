@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="logo">
+            <img src="/static/images/edo_logo.png.jpeg" alt="Edu Boost Up Logo">
+          </div>
 <h2>All Student Requests</h2>
 
 {% if requests %}
@@ -29,7 +32,7 @@
             <td>{{ r.created_at.strftime('%Y-%m-%d') }}</td>
             <td>
                 {% if r.pdf_url %}
-                <a href="{{ url_for('static', filename=r.pdf_url) }}" download class="btn btn-sm btn-info">
+                <a href="{{ url_for('static', filename=r.pdf_url.replace('uploads/', 'uploads/')) }}" download class="btn btn-sm btn-info">
                     Download
                 </a>
                 {% else %}
@@ -44,5 +47,5 @@
 <p>No requests found.</p>
 {% endif %}
 
-<a href="/employee/dashboard" class="btn btn-primary mt-3">Back to Dashboard</a>
+<a href="{{ url_for('employee_dashboard') }}" class="btn btn-primary mt-3">Back to Dashboard</a>
 {% endblock %}

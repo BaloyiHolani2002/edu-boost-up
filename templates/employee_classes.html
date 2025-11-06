@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
 
+<div class="logo">
+            <img src="/static/images/edo_logo.png.jpeg" alt="Edu Boost Up Logo">
+          </div>
 <h2>Your Classes</h2>
 
 {% if classes %}
@@ -20,15 +23,15 @@
     <tbody>
     {% for c in classes %}
         <tr>
-            <td>{{ c[1] }}</td>
-            <td>{{ c[2] }}</td>
-            <td>{{ c[3] }}</td>
-            <td>{{ c[4] }}</td>
-            <td>{{ c[5] }} min</td>
-            <td>{{ c[6] }}</td>
+            <td>{{ c.title }}</td>
+            <td>{{ c.topic }}</td>
+            <td>{{ c.type }}</td>
+            <td>{{ c.start_time }}</td>
+            <td>{{ c.duration }} min</td>
+            <td>{{ c.grade }}</td>
             <td>
-                {% if c[7] %}
-                    <a href="{{ c[7] }}" target="_blank" class="btn btn-sm btn-primary">Join</a>
+                {% if c.link %}
+                    <a href="{{ c.link }}" target="_blank" class="btn btn-sm btn-primary">Join</a>
                 {% else %}
                     <span class="text-muted">No link</span>
                 {% endif %}

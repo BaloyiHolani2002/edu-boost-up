@@ -1,22 +1,58 @@
+
 {% extends "base.html" %}
 {% block content %}
+<div class="logo">
+            <img src="/static/images/edo_logo.png.jpeg" alt="Edu Boost Up Logo">
+          </div>
 <h2>Upload Content for Grade {{ grade }}</h2>
+<form method="POST">
 
-<form method="POST" enctype="multipart/form-data">
-
+    <!-- Title -->
     <input type="text" name="title" placeholder="Title" class="form-control" required><br>
 
+    <!-- Description -->
     <textarea name="description" placeholder="Description" class="form-control"></textarea><br>
 
-    <input type="text" name="subject" placeholder="Subject" class="form-control" required><br>
+    
 
-    <label>PDF File (Optional):</label>
-    <input type="url" name="pdf_file" placeholder="Paste pdf link here" class="form-control"><br><br>
+    <!-- Subject Dropdown -->
+    <label for="subject">Select Subject:</label>
+    <select name="subject" id="subject" class="form-control" required>
+        <option value="">-- Select Subject --</option>
+        <option value="Mathematics">Mathematics</option>
+        <option value="Accounting">Accounting</option>
+        <option value="Physical Science">Physical Science</option>
+    </select><br>
 
-    <label>Video Link (Google Drive / YouTube / Any Link):</label>
-    <input type="url" name="video_link" placeholder="Paste video link here" class="form-control" required><br><br>
+    <!-- PDF Link -->
+    <label>PDF File Link (Optional):</label>
+    <input type="url" name="file_url" placeholder="Paste PDF link here (Google Drive / Server)" class="form-control"><br><br>
 
+    <!-- Video Links -->
+    <label>Video Links (Multiple Allowed):</label>
+    <div id="video-links">
+        <input type="url" name="video_links[]" placeholder="Paste video link here" class="form-control" required><br>
+    </div>
+
+    <button type="button" class="btn btn-secondary" onclick="addVideoLink()">+ Add Another Video Link</button>
+    <br><br>
+
+    <!-- Submit -->
     <button type="submit" class="btn btn-success">Save Content</button>
 
 </form>
+
+<script>
+function addVideoLink() {
+    const container = document.getElementById("video-links");
+    const input = document.createElement("input");
+    input.type = "url";
+    input.name = "video_links[]";
+    input.placeholder = "Paste another video link";
+    input.className = "form-control";
+    container.appendChild(input);
+    container.appendChild(document.createElement("br"));
+}
+</script>
+
 {% endblock %}

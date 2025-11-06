@@ -6,33 +6,39 @@
 </head>
 <body>
     <h1>Add New Mentor</h1>
-    <form action="{{ url_for('admin_add_mentor') }}" method="POST" enctype="multipart/form-data">
-    <label for="name">First Name:</label>
-    <input type="text" name="name" required><br><br>
 
-    <label for="surname">Surname:</label>
-    <input type="text" name="surname" required><br><br>
+    <form action="{{ url_for('admin_add_mentor') }}" method="POST">
 
-    <label for="email">Email:</label>
-    <input type="email" name="email" required><br><br>
+        <div class="logo">
+            <img src="/static/images/edo_logo.png.jpeg" alt="Edu Boost Up Logo">
+          </div>
 
-    <label for="phone">Phone:</label>
-    <input type="text" name="phone"><br><br>
+        <label for="name">First Name:</label>
+        <input type="text" name="name" required><br><br>
 
-    <label for="subject_speciality">Subject Speciality:</label>
-    <input type="text" name="subject_speciality"><br><br>
+        <label for="surname">Surname:</label>
+        <input type="text" name="surname" required><br><br>
 
-    <label for="password">Password (default: changeme123):</label>
-    <input type="text" name="password"><br><br>
+        <label for="email">Email:</label>
+        <input type="email" name="email" required><br><br>
 
-    <label for="bio">Short Bio:</label>
-    <textarea name="bio" rows="4" cols="50"></textarea><br><br>
+        <label for="phone">Phone:</label>
+        <input type="text" name="phone"><br><br>
 
-    <label for="profile_image">Profile Image:</label>
-    <input type="file" name="profile_image" accept="image/*"><br><br>
+        <label for="subject_speciality">Subject Speciality:</label>
+        <input type="text" name="subject_speciality"><br><br>
 
-    <button type="submit">Add Mentor</button>
-</form>
+        <label for="password">Password:</label>
+        <input type="text" name="password" placeholder="default: changeme123"><br><br>
+
+        <label for="bio">Short Bio:</label>
+        <textarea name="bio" rows="4" cols="50"></textarea><br><br>
+
+        <label for="profile_image">Profile Image (Paste Image URL):</label>
+        <input type="url" name="profile_image" placeholder="https://example.com/photo.jpg" ><br><br>
+
+        <button type="submit">Add Mentor</button>
+    </form>
 
 </body>
 </html>
