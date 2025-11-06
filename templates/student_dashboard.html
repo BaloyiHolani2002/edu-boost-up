@@ -7,21 +7,6 @@
     <title>Student Dashboard - Edu Boost Up</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary: #4361ee;
-            --secondary: #3a0ca3;
-            --accent: #7209b7;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --success: #4cc9f0;
-            --warning: #f72585;
-            --text-light: #6c757d;
-            --sidebar-bg: #111827;
-            --card-bg: #ffffff;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            --shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.12);
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -29,77 +14,144 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
+        :root {
+            --primary: #4361ee;
+            --primary-light: #6a7ef0;
+            --primary-dark: #2a4bd4;
+            --secondary: #3a0ca3;
+            --secondary-light: #4f1bc6;
+            --accent: #7209b7;
+            --accent-light: #8b2bd0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --dark-light: #343a40;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --math: #ff6b6b;
+            --accounting: #4ecdc4;
+            --science: #45aaf2;
+            --text-light: #6c757d;
+            --text-lighter: #adb5bd;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --border-radius: 12px;
+            --border-radius-lg: 20px;
+        }
+
         body {
-            background: #f4f6fc;
+            background: linear-gradient(135deg, #f5f7fb 0%, #e6ecff 100%);
             color: var(--dark);
             line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-light), var(--accent-light));
+            opacity: 0.1;
+            animation: float 20s infinite linear;
+        }
+
+        .shape:nth-child(1) {
+            width: 200px;
+            height: 200px;
+            top: 10%;
+            left: 5%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 150px;
+            height: 150px;
+            top: 60%;
+            right: 10%;
+            animation-delay: -5s;
+        }
+
+        .shape:nth-child(3) {
+            width: 100px;
+            height: 100px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+            }
+            100% {
+                transform: translateY(0) rotate(360deg);
+            }
         }
 
         .dashboard-container {
             display: flex;
             min-height: 100vh;
+            position: relative;
+            z-index: 1;
         }
 
         /* Sidebar Styles */
         .sidebar {
             width: 280px;
-            background: var(--sidebar-bg);
-            min-height: 100vh;
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
             color: white;
-            padding: 25px 20px;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
             position: fixed;
-            height: 100%;
+            height: 100vh;
             overflow-y: auto;
         }
 
-        .sidebar .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 35px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
         }
 
-        .logo-icon {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            padding: 12px;
+        .logo img {
+            height: 60px;
+            width: auto;
             border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .logo h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #fff, #e0e7ff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
         .nav-menu {
             list-style: none;
-            padding: 0;
+            flex: 1;
         }
 
         .nav-item {
-            margin: 10px 0;
-            border-radius: 8px;
-            overflow: hidden;
-            transition: all 0.3s ease;
+            margin-bottom: 0.5rem;
         }
 
         .nav-link {
-            color: #cbd5e1;
-            text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 15px;
-            transition: all 0.3s ease;
-            border-radius: 8px;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            font-weight: 500;
         }
 
         .nav-link:hover {
@@ -109,9 +161,9 @@
         }
 
         .nav-link.active {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: rgba(255, 255, 255, 0.2);
             color: white;
-            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
         }
 
         .nav-link i {
@@ -119,79 +171,65 @@
             text-align: center;
         }
 
-        .btn {
-            display: block;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            text-decoration: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: 600;
-            margin-top: 15px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(67, 97, 238, 0.4);
-        }
-
         .user-profile {
-            margin-top: 70px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            gap: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-top: auto;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .avatar {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent), var(--warning));
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .user-info h3 {
-            font-size: 1rem;
-            margin-bottom: 4px;
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
         }
 
         .user-info p {
-            font-size: 0.85rem;
-            color: #cbd5e1;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
         }
 
         /* Main Content Styles */
         .main-content {
             flex: 1;
-            padding: 30px;
             margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
         }
 
         .header {
+            background: white;
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e9ecef;
         }
 
         .welcome-message h2 {
-            font-size: 1.8rem;
+            font-size: 2rem;
             color: var(--secondary);
-            margin-bottom: 8px;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .welcome-message p {
@@ -199,167 +237,284 @@
             font-size: 1.1rem;
         }
 
-        .section-header {
-            margin: 40px 0 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .section-header h2 {
-            font-size: 1.5rem;
-            color: var(--secondary);
-        }
-
-        .section-header i {
-            color: var(--primary);
-            font-size: 1.3rem;
-        }
-
-        /* Payment Warning Styles */
-        .payment-warning {
-            background: linear-gradient(135deg, #fee2e2, #fecaca);
-            border-left: 5px solid var(--warning);
-            padding: 25px;
-            border-radius: 12px;
+        .days-remaining {
+            background: linear-gradient(135deg, var(--success), #2dd4bf);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
             text-align: center;
-            margin-top: 30px;
+            box-shadow: 0 4px 15px rgba(76, 201, 240, 0.3);
+        }
+
+        .days-remaining .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            display: block;
+        }
+
+        .days-remaining .label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Payment Warning */
+        .payment-warning {
+            background: linear-gradient(135deg, var(--warning), #ff4da6);
+            color: white;
+            border-radius: var(--border-radius-lg);
+            padding: 3rem;
+            text-align: center;
+            margin-bottom: 2rem;
             box-shadow: var(--shadow);
         }
 
         .payment-warning h2 {
-            color: #b91c1c;
-            margin-bottom: 10px;
-            font-size: 1.5rem;
+            font-size: 2rem;
+            margin-bottom: 1rem;
         }
 
         .payment-warning p {
-            color: #7f1d1d;
-            margin-bottom: 20px;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
         }
 
         .pay-btn {
-            background: linear-gradient(135deg, var(--warning), #e11d48);
-            color: white;
-            padding: 12px 30px;
-            border-radius: 8px;
+            background: white;
+            color: var(--warning);
+            padding: 1rem 3rem;
+            border-radius: 50px;
             text-decoration: none;
-            display: inline-block;
             font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(247, 37, 133, 0.3);
+            display: inline-block;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .pay-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(247, 37, 133, 0.4);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
         }
 
-        /* Video Container Styles */
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 3rem 0 1.5rem 0;
+        }
+
+        .section-header i {
+            font-size: 2rem;
+            color: var(--primary);
+            background: rgba(67, 97, 238, 0.1);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .section-header h2 {
+            font-size: 1.8rem;
+            color: var(--secondary);
+        }
+
+        /* Video Container */
         .video-container {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
+            background: white;
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            margin-bottom: 2rem;
             box-shadow: var(--shadow);
-            margin-bottom: 30px;
-            transition: transform 0.3s ease;
+            overflow: hidden;
         }
 
-        .video-container:hover {
+        .video-container iframe {
+            border-radius: var(--border-radius);
+            border: none;
+        }
+
+        /* Mentors Grid */
+        .mentors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .mentor-card {
+            background: white;
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 1px solid #e9ecef;
+        }
+
+        .mentor-card:hover {
             transform: translateY(-5px);
             box-shadow: var(--shadow-hover);
         }
 
-        .video-container iframe {
-            width: 100%;
-            border-radius: 10px;
-            border: none;
-        }
-
-        /* Mentors Grid Styles */
-        .mentors-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
-            margin-top: 20px;
-        }
-
-        .mentor-card {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
-            border-top: 4px solid var(--primary);
-        }
-
-        .mentor-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-hover);
+        .mentor-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
         }
 
         .mentor-photo {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-right: 10px;
-}
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--light);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
 
-.mentor-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: #007bff;
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    margin-right: 10px;
-}
-
+        .mentor-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
 
         .mentor-header h3 {
-            font-size: 1.2rem;
             color: var(--secondary);
-            margin-bottom: 5px;
+            margin-bottom: 0.5rem;
         }
 
         .mentor-header p {
-            color: var(--primary);
-            font-weight: 500;
-            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 0.3rem;
         }
 
         .mentor-card p {
             color: var(--text-light);
-            line-height: 1.5;
+            line-height: 1.6;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 250px;
+            }
+            
+            .main-content {
+                margin-left: 250px;
+            }
+            
+            .mentors-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .nav-menu {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .nav-item {
+                flex: 1;
+                min-width: 120px;
+            }
+            
+            .nav-link {
+                justify-content: center;
+                text-align: center;
+                padding: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                padding: 1rem;
+            }
+            
+            .main-content {
+                padding: 0.5rem;
+            }
+            
+            .header {
+                padding: 1.5rem;
+            }
+            
+            .welcome-message h2 {
+                font-size: 1.5rem;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.5rem;
+            }
+            
+            .mentor-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
         }
     </style>
 </head>
 
 <body>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
 
     <div class="dashboard-container">
 
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="logo">
-                <div class="logo">
-            <img src="/static/images/edo_logo.png.jpeg" alt="Edu Boost Up Logo">
-          </div>
+                <img src="/static/images/edo_logo.png.jpeg" alt="Edu Boost Up Logo">
             </div>
 
             <ul class="nav-menu">
                 <li class="nav-item"><a class="nav-link active"><i class="fas fa-home"></i>Dashboard</a></li>
+                {% if days_remaining > 0 %}
                 <li class="nav-item"><a class="nav-link" href="/student/dashboard/courses"><i
                             class="fas fa-book-open"></i>My Courses</a></li>
+                {% endif %}
                 <li class="nav-item"><a class="nav-link" href="/student/request"><i class="fas fa-paper-plane"></i>Send
                         Request</a></li>
                 <li class="nav-item"><a class="nav-link" href="/student/enrollment"><i
-                            class="fas fa-calendar-alt"></i>View My enromment and days</a></li>
+                            class="fas fa-calendar-alt"></i>My Enrollment</a></li>
                 <li class="nav-item"><a class="nav-link" href="/student/profile"><i class="fas fa-user-edit"></i>Update
                         Profile</a></li>
                 <li class="nav-item"><a class="nav-link" href="/logout"><i class="fas fa-sign-out-alt"></i>Logout</a>
@@ -371,6 +526,11 @@
                 <div class="user-info">
                     <h3>{{ student.name }} {{ student.surname }}</h3>
                     <p>Grade {{ student.grade }}</p>
+                    {% if days_remaining > 0 %}
+                    <p style="color: var(--success); margin-top: 0.5rem;">
+                        <i class="fas fa-clock"></i> {{ days_remaining }} days remaining
+                    </p>
+                    {% endif %}
                 </div>
             </div>
         </aside>
@@ -383,70 +543,94 @@
                     <h2>Welcome back, {{ student.name }}!</h2>
                     <p>Keep pushing, your future is bright 🌟</p>
                 </div>
+                {% if days_remaining > 0 %}
+                <div class="days-remaining">
+                    <span class="number">{{ days_remaining }}</span>
+                    <span class="label">Days Remaining</span>
+                </div>
+                {% endif %}
             </header>
 
-            <!-- ✅ If Subscription Expired and make it to remore the
-         <li class="nav-item"><a class="nav-link" href="/student/dashboard/courses"><i class="fas fa-book-open"></i>My Courses</a></li>
-             -->
-            {% if days_remaining <= 0 %} <div class="payment-warning">
+            {% if days_remaining <= 0 %}
+            <div class="payment-warning">
                 <h2>Your Learning Plan Has Expired</h2>
                 <p>You currently have <strong>0 days</strong> remaining. Please renew to continue accessing lessons.</p>
                 <a href="/student/enrollment" class="pay-btn">Renew Now</a>
-    </div>
-    {% else %}
-
-    <!-- ✅ Video Guide -->
-    <div class="section-header">
-        <i class="fas fa-play-circle"></i>
-        <h2> Platform Guide</h2>
-    </div>
-    <div class="video-container">
-        <iframe src="https://drive.google.com/file/d/1K_6L1fpYetRd-c4EJshdiwd9F0X6Il59/preview" width="100%"
-            height="380" allow="autoplay" allowfullscreen>
-        </iframe>
-    </div>
-
-    <!-- ✅ Mentors Section -->
-    <div class="section-header">
-        <i class="fas fa-chalkboard-teacher"></i>
-        <h2> Your Mentors</h2>
-    </div>
-    <div class="mentors-grid">
-    {% for m in mentors %}
-    <div class="mentor-card">
-
-        <div class="mentor-header">
-            {% if m.profile_image %}
-                <img src="{{ url_for('static', filename='uploads/mentors/' ~ m.profile_image) }}" 
-                     alt="Mentor Photo" class="mentor-photo">
+            </div>
             {% else %}
-                <div class="mentor-avatar">{{ m.name[0] }}{{ m.surname[0] }}</div>
+
+            <!-- Platform Guide -->
+            <div class="section-header">
+                <i class="fas fa-play-circle"></i>
+                <h2>Platform Guide</h2>
+            </div>
+            <div class="video-container" >
+                <iframe src="https://drive.google.com/file/d/1K_6L1fpYetRd-c4EJshdiwd9F0X6Il59/preview" width="100%"
+                    height="380" allow="autoplay" allowfullscreen>
+                </iframe>
+            </div>
+
+            <!-- Mentors Section -->
+            <div class="section-header">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <h2>Your Mentors</h2>
+            </div>
+            <div class="mentors-grid">
+                {% for m in mentors %}
+                <div class="mentor-card">
+                    <div class="mentor-header">
+                        {% if m.profile_image %}
+                            <img src="{{ url_for('static', filename='uploads/mentors/' ~ m.profile_image) }}" 
+                                 alt="Mentor Photo" class="mentor-photo">
+                        {% else %}
+                            <div class="mentor-avatar">{{ m.name[0] }}{{ m.surname[0] }}</div>
+                        {% endif %}
+                        <div>
+                            <h3>{{ m.name }} {{ m.surname }}</h3>
+                            <p>{{ m.subject_speciality }}</p>
+                            {% if m.phone %}
+                            <p><i class="fas fa-phone"></i> {{ m.phone }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p>{{ m.bio }}</p>
+                </div>
+                {% endfor %}
+            </div>
             {% endif %}
 
-            <div>
-                <h3>{{ m.name }} {{ m.surname }}</h3>
-                <p>{{ m.subject_speciality }}</p>
-                {% if m.phone %}
-                <p>📞 {{ m.phone }}</p>
-                {% endif %}
-            </div>
-        </div>
-
-        
-
-        <p>{{ m.bio }}</p>
-
-    </div>
-    {% endfor %}
-</div>
-
-
-
-    {% endif %}
-
-    </main>
+        </main>
     </div>
 
+    <script>
+        // Add active state to navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Add smooth scrolling
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // Add loading animation
+            const mentorCards = document.querySelectorAll('.mentor-card');
+            mentorCards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    </script>
 </body>
 
 </html>

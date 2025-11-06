@@ -918,16 +918,6 @@ def luhn_check(id_num):
 # reduce_enrollment_days()
 scheduler = APScheduler()
 
-@scheduler.task('interval', id='reduce_days', hours=24)
-def scheduled_reduce():
-    reduce_enrollment_days()
-
-    scheduler = APScheduler()
-    scheduler.init_app(app)
-    scheduler.start()
-
-    scheduler.add_job(id='reduce_enrollment_days', func=reduce_daily, trigger='interval', hours=24)
-
 def reduce_enrollment_days():
     """Reduce enrollment days by 1 for all active enrollments with days remaining > 0"""
     conn = get_db_connection()
@@ -954,18 +944,9 @@ def reduce_enrollment_days():
             """)
 
             conn.commit()
-
-            # Logging (optional)
-            cur.execute("SELECT COUNT(*) FROM Enrollment WHERE status = 'active' AND days_remaining > 0")
-            active_count = cur.fetchone()[0]
-            
-            cur.execute("SELECT COUNT(*) FROM Enrollment WHERE status = 'expired'")
-            expired_count = cur.fetchone()[0]
-
             cur.close()
-            print("✅ Enrollment days updated successfully.")
-            print(f"   Remaining active: {active_count}")
-            print(f"   Expired: {expired_count}")
+
+            print("✅ Daily Enrollment Reduction Complete")
 
         except Exception as e:
             print(f"❌ Error reducing enrollment days: {e}")
@@ -973,6 +954,13 @@ def reduce_enrollment_days():
             conn.close()
 
 
+# Schedule job to run at **midnight (00:00)** every day
+@scheduler.task('cron', id='reduce_days_midnight', hour=0, minute=0)
+def scheduled_reduce_days():
+    reduce_enrollment_days()
+
+
+    
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
@@ -1294,8 +1282,13 @@ def admin_view_mentors():
 def admin_edit_mentor(mentor_id):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    # Get current mentor
     cur.execute("SELECT * FROM Mentor WHERE mentor_id = %s", (mentor_id,))
     mentor = cur.fetchone()
+    if not mentor:
+        flash("Mentor not found.", "danger")
+        return redirect('/admin/mentors')
 
     if request.method == 'POST':
         name = request.form.get('name')
@@ -1306,19 +1299,23 @@ def admin_edit_mentor(mentor_id):
         bio = request.form.get('bio')
         status = request.form.get('status')
 
-        # Handle image upload
+        # Handle profile image upload only if a new one is provided
         file = request.files.get('profile_image')
-        image_path = mentor.get('profile_image', None)
+        image_path = mentor['profile_image']  # Keep current image
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
+            upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            image_path = f"{app.config['UPLOAD_FOLDER']}/{filename}"
+            file.save(upload_path)
 
+            # Only store filename in DB, not full path
+            image_path = filename
+
+        # Update mentor details
         cur.execute("""
             UPDATE Mentor
-            SET name=%s, surname=%s, email=%s, phone=%s,
+            SET name=%s, surname=%s, email=%s, phone=%s, 
                 subject_speciality=%s, bio=%s, status=%s, profile_image=%s
             WHERE mentor_id=%s
         """, (name, surname, email, phone, subject_speciality, bio, status, image_path, mentor_id))
@@ -1326,13 +1323,13 @@ def admin_edit_mentor(mentor_id):
         conn.commit()
         cur.close()
         conn.close()
+
         flash("Mentor updated successfully.", "success")
         return redirect('/admin/mentors')
 
     cur.close()
     conn.close()
     return render_template('admin_edit_mentor.html', mentor=mentor)
-
 
 # --- Delete mentor ---
 @app.route('/admin/mentors/delete/<int:mentor_id>', methods=['GET'])
