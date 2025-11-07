@@ -33,6 +33,11 @@ DB_CONFIG = {
     'port': '5432'
 }
 
+# ✅ Initialize scheduler
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
+
 def get_db_connection():
     """Create and return a database connection"""
     try:
@@ -83,6 +88,21 @@ def init_db():
                 )
                 """,
                 """
+                CREATE TABLE IF NOT EXISTS Mentor (
+                    mentor_id SERIAL PRIMARY KEY,
+                    name VARCHAR(100) NOT NULL,
+                    surname VARCHAR(100) NOT NULL,
+                    email VARCHAR(100) UNIQUE NOT NULL,
+                    phone VARCHAR(20),
+                    subject_speciality VARCHAR(100),
+                    password VARCHAR(255) NOT NULL,
+                    bio TEXT,
+                    profile_image VARCHAR(255),
+                    join_date DATE DEFAULT CURRENT_DATE,
+                    status VARCHAR(20) DEFAULT 'active'
+                )
+                """,
+                """
                 CREATE TABLE IF NOT EXISTS Content (
                     content_id SERIAL PRIMARY KEY,
                     mentor_id INTEGER,
@@ -96,6 +116,28 @@ def init_db():
                 )
                 """,
                 """
+                CREATE TABLE IF NOT EXISTS ContentRecord (
+                    record_id SERIAL PRIMARY KEY,
+                    content_id INTEGER,
+                    file_link VARCHAR(255),
+                    upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS Class (
+                    class_id SERIAL PRIMARY KEY,
+                    mentor_id INTEGER,
+                    title VARCHAR(255) NOT NULL,
+                    topic VARCHAR(255),
+                    type VARCHAR(50),
+                    start_time TIMESTAMP,
+                    duration VARCHAR(50),
+                    grade VARCHAR(10),
+                    link VARCHAR(255),
+                    upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                """,
+                """
                 CREATE TABLE IF NOT EXISTS Request (
                     request_id SERIAL PRIMARY KEY,
                     student_id VARCHAR(13),
@@ -105,7 +147,7 @@ def init_db():
                     request_type VARCHAR(50),
                     status VARCHAR(20) DEFAULT 'pending',
                     created_at DATE DEFAULT CURRENT_DATE,
-                    pdf VARCHAR(255)
+                    pdf_url VARCHAR(255)
                 )
                 """,
                 """
@@ -113,7 +155,11 @@ def init_db():
                     enrollment_id SERIAL PRIMARY KEY,
                     student_id VARCHAR(13),
                     class_id INTEGER,
-                    enrollment_date DATE DEFAULT CURRENT_DATE
+                    enrollment_days INTEGER DEFAULT 20,
+                    days_remaining INTEGER DEFAULT 20,
+                    status VARCHAR(20) DEFAULT 'active',
+                    enrollment_date DATE DEFAULT CURRENT_DATE,
+                    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
                 """,
                 """
@@ -141,11 +187,7 @@ def init_db():
                 cur.execute(table)
             
             # Insert default admin user
-            cur.execute("""
-                INSERT INTO Admin (name, email, password, role) 
-                VALUES ('System Admin', 'admin@eduboostup.com', 'admin123', 'superadmin')
-                ON CONFLICT (email) DO NOTHING
-            """)
+            
             
             conn.commit()
             cur.close()
@@ -158,9 +200,147 @@ def init_db():
     else:
         print("❌ Failed to connect to database during initialization")
 
+# ✅ Automatic Day Reduction System
+def reduce_enrollment_days():
+    """Reduce enrollment days by 1 for all active enrollments with days remaining > 0"""
+    conn = get_db_connection()
+    if conn:
+        try:
+            cur = conn.cursor()
+            print("🔄 Starting daily enrollment reduction...")
+
+            # 1. Reduce days for active enrollments
+            cur.execute("""
+                UPDATE Enrollment 
+                SET days_remaining = days_remaining - 1,
+                    last_updated = CURRENT_TIMESTAMP
+                WHERE status = 'active' 
+                AND days_remaining > 0
+            """)
+            reduced_count = cur.rowcount
+
+            # 2. Mark expired where days reached 0
+            cur.execute("""
+                UPDATE Enrollment 
+                SET status = 'expired',
+                    last_updated = CURRENT_TIMESTAMP
+                WHERE status = 'active'
+                AND days_remaining <= 0
+            """)
+            expired_count = cur.rowcount
+
+            conn.commit()
+            cur.close()
+
+            print(f"✅ Daily Enrollment Reduction Complete: {reduced_count} updated, {expired_count} expired")
+
+        except Exception as e:
+            print(f"❌ Error reducing enrollment days: {e}")
+            if conn:
+                conn.rollback()
+        finally:
+            conn.close()
+    else:
+        print("❌ No database connection for enrollment reduction")
+
+# ✅ Schedule job to run daily at midnight
+@scheduler.task('cron', id='reduce_days_job', hour=0, minute=0)
+def scheduled_reduce_days():
+    print("⏰ Running scheduled enrollment reduction...")
+    reduce_enrollment_days()
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+# ---------- Step 1: Identity confirmation (Email only) ----------
+@app.route("/reset", methods=["GET", "POST"])
+def reset_request():
+    if request.method == "POST":
+        email = request.form.get("email").strip()
+
+        if not email:
+            flash("❌ Please enter your email.", "danger")
+            return render_template("reset_request.html")
+
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        try:
+            # Check if student exists
+            cur.execute("""
+                SELECT student_id, email 
+                FROM Student 
+                WHERE email = %s
+            """, (email,))
+            student = cur.fetchone()
+
+            if student:
+                # Save temporary session info for reset
+                session['reset_student_id'] = student['student_id']
+                session['reset_email'] = student['email']
+                flash("✅ Identity confirmed. You can now reset your password.", "success")
+                return redirect("/reset/password")
+            else:
+                flash("❌ Email not found. Please check and try again.", "danger")
+        finally:
+            cur.close()
+            conn.close()
+
+    return render_template("reset_request.html")
+
+
+# ---------- Step 2: Reset password ----------
+@app.route("/reset/password", methods=["GET", "POST"])
+def reset_password():
+    if 'reset_student_id' not in session or 'reset_email' not in session:
+        flash("Please confirm your email first.", "warning")
+        return redirect("/reset")
+
+    if request.method == "POST":
+        new_password = request.form.get("new_password").strip()
+        confirm_password = request.form.get("confirm_password").strip()
+
+        if not new_password or not confirm_password:
+            flash("Please fill in all fields.", "danger")
+        elif new_password != confirm_password:
+            flash("Passwords do not match.", "danger")
+        else:
+            student_id = session['reset_student_id']
+            email = session['reset_email']
+
+            conn = get_db_connection()
+            cur = conn.cursor()
+            try:
+                # Update student password (hashing recommended!)
+                cur.execute("""
+                    UPDATE Student 
+                    SET password = %s 
+                    WHERE student_id = %s AND email = %s
+                """, (new_password, student_id, email))
+                conn.commit()
+
+                flash("✅ Password reset successful. Please log in.", "success")
+
+                # Clear session info
+                session.pop('reset_student_id')
+                session.pop('reset_email')
+
+                return redirect("/login")
+            finally:
+                cur.close()
+                conn.close()
+
+    return render_template("reset_password.html")
+
+
+# ✅ Manual test route for day reduction
+@app.route('/admin/test-reduce-days')
+def test_reduce_days():
+    """Manual test endpoint for day reduction"""
+    reduce_enrollment_days()
+    flash("Day reduction executed manually", "success")
+    return redirect('/admin/dashboard')
 
 UPLOAD_FOLDER = 'uploads'  # at the root of your project
 if not os.path.exists(UPLOAD_FOLDER):
@@ -469,12 +649,16 @@ def student_enrollment():
         return redirect("/student/payment?expired=1")
 
     # ✅ Pass a list so the template can loop
-    return render_template("student_enrollment.html", enrollments=[enrollment], payment_info={
-        "bank_name": "My Bank",
-        "account_name": "EduBoost",
-        "account_number": "1234567890",
-        "reference": f"STU{student_id}"
-    })
+    return render_template(
+    "student_enrollment.html",
+    enrollments=[enrollment],
+    payment_info={
+        "bank_name": "ABSA\n/ CAPITEC",          # line break between banks
+        "account_name": "EduBoost / Baloyi",     # remove invalid backslash
+        "account_number": "4103751120\n/ 1843987021",  # line break between account numbers
+        "reference": f"STU-{student_id}"
+    }
+)
 
 
 @app.route("/student/profile", methods=['GET', 'POST'])
@@ -571,42 +755,6 @@ def student_courses():
     conn.close()
 
     return render_template("student_courses.html", subjects=subjects, grade=grade)
-
-    if 'user_role' not in session or session['user_role'] != 'student':
-        return redirect('/login')
-
-    student_id = session['student_id']
-
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-
-    # Check remaining days
-    cur.execute("""
-        SELECT days_remaining 
-        FROM Enrollment
-        WHERE student_id = %s AND status = 'active'
-        LIMIT 1
-    """, (student_id,))
-    enrollment = cur.fetchone()
-
-    # If no active enrollment or 0 days remaining -> Send to payment page
-    if not enrollment or enrollment['days_remaining'] <= 0:
-        cur.close()
-        conn.close()
-        return redirect('/student/payment?expired=1')
-
-    # Get available subjects
-    cur.execute("""
-        SELECT DISTINCT subject 
-        FROM Content
-        WHERE subject IS NOT NULL
-        ORDER BY subject
-    """)
-    subjects = cur.fetchall()
-
-    cur.close()
-    conn.close()
-    return render_template("student_courses.html", subjects=subjects)
 
 @app.route("/student/courses/<string:subject>/contents")
 def student_course_contents(subject):
@@ -749,10 +897,10 @@ def calculate_id_score(id_number):
             age -= 1
         results['age'] = age
 
-        if 14 <= age <= 20:
+        if 13 <= age <= 25:
             results['score'] += 15
         else:
-            results['messages'].append(f"Age {age} not in 14-20 range")
+            results['messages'].append(f"Age {age} not in 13-25 range")
     except ValueError:
         results['messages'].append("Invalid birth date in ID")
         return results
@@ -810,9 +958,9 @@ def signup():
             return render_template('singuperror.html', error_message="Could not determine age from ID")
 
         # Age validation
-        if age < 13 or age > 22:
+        if age < 13 or age > 25:
             return render_template('singuperror.html', 
-                                   error_message=f"You must be between 13 and 22 years old. Your age: {age}")
+                                   error_message=f"You must be between 13 and 25 years old. Your age: {age}")
 
         # Grade validation
         try:
@@ -851,7 +999,7 @@ def signup():
                     VALUES (%s,%s,%s,%s,%s,%s,%s)
                 """, (student_id, name, surname, email, password, grade, phone))
 
-                # Create free 20-day enrollment
+                # ✅ Create enrollment with new structure
                 cur.execute("""
                     INSERT INTO Enrollment (student_id, enrollment_days, days_remaining, status)
                     VALUES (%s, 20, 20, 'active')
@@ -911,53 +1059,6 @@ def luhn_check(id_num):
 
     return computed_check == digits[12]
 
-
-
-
-# You can call this function daily using:
-# reduce_enrollment_days()
-scheduler = APScheduler()
-
-def reduce_enrollment_days():
-    """Reduce enrollment days by 1 for all active enrollments with days remaining > 0"""
-    conn = get_db_connection()
-    if conn:
-        try:
-            cur = conn.cursor()
-
-            # 1. Reduce days first
-            cur.execute("""
-                UPDATE Enrollment 
-                SET days_remaining = days_remaining - 1,
-                    last_updated = CURRENT_TIMESTAMP
-                WHERE status = 'active' 
-                AND days_remaining > 0
-            """)
-
-            # 2. Mark expired where days reached 0
-            cur.execute("""
-                UPDATE Enrollment 
-                SET status = 'expired',
-                    last_updated = CURRENT_TIMESTAMP
-                WHERE status = 'active'
-                AND days_remaining <= 0
-            """)
-
-            conn.commit()
-            cur.close()
-
-            print("✅ Daily Enrollment Reduction Complete")
-
-        except Exception as e:
-            print(f"❌ Error reducing enrollment days: {e}")
-        finally:
-            conn.close()
-
-
-# Schedule job to run at **midnight (00:00)** every day
-@scheduler.task('cron', id='reduce_days_midnight', hour=0, minute=0)
-def scheduled_reduce_days():
-    reduce_enrollment_days()
 
 
 
@@ -1622,6 +1723,106 @@ def employee_content_upload():
             conn.close()
 
     return render_template("upload_content.html", grade=grade)
+
+
+@app.route("/employee/manage-contents")
+def employee_manage_contents():
+    # Ensure logged in as mentor
+    if 'user_role' not in session or session['user_role'] != 'mentor':
+        flash("Please login as a mentor first.", "warning")
+        return redirect("/login")
+
+    mentor_id = session['user_id']  # Unified session key
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    # Get all content uploaded by this mentor
+    cur.execute("""
+        SELECT C.content_id, C.title, C.subject, C.grade, C.file_url, C.upload_date
+        FROM Content C
+        WHERE C.mentor_id = %s
+        ORDER BY C.upload_date DESC
+    """, (mentor_id,))
+    contents = cur.fetchall()
+
+    # Get multiple resource/video links for each content
+    content_links = {}
+    for c in contents:
+        cur.execute("""
+            SELECT file_link 
+            FROM ContentRecord 
+            WHERE content_id = %s
+        """, (c['content_id'],))
+        content_links[c['content_id']] = [row['file_link'] for row in cur.fetchall()]
+
+    cur.close()
+    conn.close()
+
+    return render_template(
+        "manage_contents.html",
+        contents=contents,
+        content_links=content_links
+    )
+
+    # Ensure logged in as mentor
+    if 'user_role' not in session or session['user_role'] != 'mentor':
+        flash("Please login as a mentor first.", "warning")
+        return redirect("/login")
+
+    mentor_id = session['user_id']  # Unified session key
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    # Get all content uploaded by this mentor
+    cur.execute("""
+        SELECT C.content_id, C.title, C.subject, C.grade, C.file_url, C.upload_date
+        FROM Content C
+        WHERE C.mentor_id = %s
+        ORDER BY C.upload_date DESC
+    """, (mentor_id,))
+    contents = cur.fetchall()
+
+    # Get multiple video links per content
+    content_links = {}
+    for c in contents:
+        cur.execute("""
+            SELECT file_link 
+            FROM ContentRecord 
+            WHERE content_id = %s
+        """, (c['content_id'],))
+        content_links[c['content_id']] = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return render_template(
+        "manage_contents.html",
+        contents=contents,
+        content_links=content_links
+    )
+
+@app.route("/employee/manage-contents/delete/<int:content_id>", methods=["POST"])
+def delete_content(content_id):
+    if 'user_role' not in session or session['user_role'] != 'mentor':
+        flash("Unauthorized", "danger")
+        return redirect("/login")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Delete associated extra links first
+    cur.execute("DELETE FROM ContentRecord WHERE content_id = %s", (content_id,))
+    # Delete main content
+    cur.execute("DELETE FROM Content WHERE content_id = %s", (content_id,))
+    
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    flash("Content deleted successfully.", "success")
+    return redirect("/employee/manage-contents")
 
 
 @app.route("/employee/requests")

@@ -69,6 +69,7 @@
         top: 10%;
         left: 5%;
         animation-delay: 0s;
+        background: linear-gradient(135deg, var(--primary-light), var(--success));
     }
 
     .shape:nth-child(2) {
@@ -77,6 +78,7 @@
         top: 60%;
         right: 10%;
         animation-delay: -5s;
+        background: linear-gradient(135deg, var(--accent-light), var(--warning));
     }
 
     .shape:nth-child(3) {
@@ -85,14 +87,27 @@
         bottom: 20%;
         left: 20%;
         animation-delay: -10s;
+        background: linear-gradient(135deg, var(--success), var(--primary));
+    }
+
+    .shape:nth-child(4) {
+        width: 120px;
+        height: 120px;
+        top: 30%;
+        right: 20%;
+        animation-delay: -7s;
+        background: linear-gradient(135deg, var(--warning), var(--accent));
     }
 
     @keyframes float {
         0% {
             transform: translateY(0) rotate(0deg);
         }
-        50% {
-            transform: translateY(-20px) rotate(180deg);
+        33% {
+            transform: translateY(-20px) rotate(120deg);
+        }
+        66% {
+            transform: translateY(10px) rotate(240deg);
         }
         100% {
             transform: translateY(0) rotate(360deg);
@@ -110,10 +125,15 @@
         width: auto;
         border-radius: 12px;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        transition: var(--transition);
+    }
+
+    .logo img:hover {
+        transform: scale(1.05);
     }
 
     .enrollment-container {
-        max-width: 1000px;
+        max-width: 1200px;
         margin: 0 auto;
     }
 
@@ -123,26 +143,98 @@
     }
 
     .page-header h2 {
-        font-size: 2.5rem;
-        font-weight: 700;
+        font-size: 2.8rem;
+        font-weight: 800;
         color: var(--secondary);
         margin-bottom: 1rem;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 1rem;
+        background: linear-gradient(135deg, var(--secondary), var(--primary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
     .page-header h2::before {
         content: '📅';
-        font-size: 2rem;
+        font-size: 2.5rem;
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
     }
 
     .page-header p {
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         color: var(--text-light);
         max-width: 600px;
         margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    .stats-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--border-radius-lg);
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        text-align: center;
+        border-top: 4px solid var(--primary);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(67, 97, 238, 0.05), transparent);
+        transition: 0.6s;
+    }
+
+    .stat-card:hover::before {
+        left: 100%;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        margin: 0 auto 1rem;
+        box-shadow: 0 6px 20px rgba(67, 97, 238, 0.3);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--primary);
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: var(--text-light);
+        font-weight: 500;
+        font-size: 0.9rem;
     }
 
     .enrollment-content {
@@ -161,30 +253,48 @@
     .enrollment-card {
         background: white;
         border-radius: var(--border-radius-lg);
-        padding: 2rem;
+        padding: 2.5rem;
         box-shadow: var(--shadow);
         border: 2px solid transparent;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .enrollment-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        transform: scaleX(0);
         transition: var(--transition);
     }
 
     .enrollment-card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-8px);
         box-shadow: var(--shadow-hover);
         border-color: var(--primary-light);
+    }
+
+    .enrollment-card:hover::before {
+        transform: scaleX(1);
     }
 
     .card-header {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 1.2rem;
         margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
+        padding-bottom: 1.5rem;
         border-bottom: 2px solid #f1f3f9;
     }
 
     .card-header i {
-        width: 50px;
-        height: 50px;
+        width: 60px;
+        height: 60px;
         border-radius: 50%;
         background: linear-gradient(135deg, var(--primary), var(--secondary));
         display: flex;
@@ -192,45 +302,75 @@
         justify-content: center;
         color: white;
         font-size: 1.5rem;
+        box-shadow: 0 6px 20px rgba(67, 97, 238, 0.3);
+        transition: var(--transition);
+    }
+
+    .enrollment-card:hover .card-header i {
+        transform: scale(1.1);
+        background: linear-gradient(135deg, var(--accent), var(--accent-light));
     }
 
     .card-header h3 {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
         color: var(--secondary);
-        font-weight: 600;
+        font-weight: 700;
     }
 
     .days-counter {
         text-align: center;
-        padding: 1.5rem;
+        padding: 2rem;
         background: linear-gradient(135deg, #f0f4ff, #e6ecff);
         border-radius: var(--border-radius);
         margin-bottom: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .days-counter::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%234361ee' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.3;
     }
 
     .days-number {
-        font-size: 3rem;
-        font-weight: 800;
+        font-size: 4rem;
+        font-weight: 900;
         color: var(--primary);
         line-height: 1;
         margin-bottom: 0.5rem;
+        position: relative;
+        text-shadow: 0 4px 8px rgba(67, 97, 238, 0.2);
     }
 
     .days-label {
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         color: var(--text-light);
-        font-weight: 500;
+        font-weight: 600;
+        position: relative;
     }
 
     .status-badge {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
+        gap: 0.8rem;
+        padding: 0.8rem 1.5rem;
         border-radius: 50px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: var(--transition);
+    }
+
+    .status-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
     }
 
     .status-active {
@@ -251,15 +391,23 @@
     .enrollment-details {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 1.2rem;
     }
 
     .detail-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.8rem 0;
+        padding: 1rem 0;
         border-bottom: 1px solid #f1f3f9;
+        transition: var(--transition);
+    }
+
+    .detail-item:hover {
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        transform: translateX(5px);
     }
 
     .detail-item:last-child {
@@ -268,99 +416,159 @@
 
     .detail-label {
         color: var(--text-light);
-        font-weight: 500;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .detail-value {
         color: var(--dark);
-        font-weight: 600;
+        font-weight: 700;
+        font-size: 1.1rem;
     }
 
     .payment-section {
         background: white;
         border-radius: var(--border-radius-lg);
-        padding: 2.5rem;
+        padding: 3rem;
         box-shadow: var(--shadow);
         margin-top: 2rem;
-        border-left: 4px solid var(--accent);
+        border-left: 6px solid var(--accent);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .payment-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%237209b7' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.4;
     }
 
     .payment-header {
         display: flex;
         align-items: center;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        position: relative;
     }
 
     .payment-header i {
-        width: 50px;
-        height: 50px;
+        width: 70px;
+        height: 70px;
         border-radius: 50%;
         background: linear-gradient(135deg, var(--accent), var(--accent-light));
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 1.5rem;
+        font-size: 1.8rem;
+        box-shadow: 0 6px 20px rgba(114, 9, 183, 0.3);
     }
 
     .payment-header h3 {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         color: var(--secondary);
-        font-weight: 600;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--secondary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
     .payment-instructions {
         background: linear-gradient(135deg, #f8f9ff, #f0f4ff);
         border-radius: var(--border-radius);
-        padding: 2rem;
-        margin-bottom: 1.5rem;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        border: 2px solid transparent;
+        transition: var(--transition);
+    }
+
+    .payment-instructions:hover {
+        border-color: var(--primary-light);
+        transform: translateY(-2px);
     }
 
     .payment-instructions h4 {
         color: var(--primary);
-        margin-bottom: 1rem;
-        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+        font-size: 1.3rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    .payment-instructions h4::before {
+        content: '💡';
+        font-size: 1.5rem;
     }
 
     .bank-details {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin: 1.5rem 0;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
     }
 
     .bank-item {
         background: white;
-        padding: 1.5rem;
+        padding: 2rem;
         border-radius: var(--border-radius);
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        border-left: 3px solid var(--primary);
+        border-left: 4px solid var(--primary);
+        transition: var(--transition);
+        text-align: center;
+    }
+
+    .bank-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        border-left-color: var(--accent);
     }
 
     .bank-label {
         font-size: 0.9rem;
         color: var(--text-light);
-        margin-bottom: 0.5rem;
-        font-weight: 500;
+        margin-bottom: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
     .bank-value {
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         color: var(--dark);
-        font-weight: 600;
+        font-weight: 700;
+        word-break: break-all;
     }
 
     .payment-note {
         background: linear-gradient(135deg, #e3f2fd, #bbdefb);
         border-radius: var(--border-radius);
-        padding: 1.5rem;
+        padding: 2rem;
         border-left: 4px solid var(--success);
+        position: relative;
+    }
+
+    .payment-note::before {
+        content: '⚠️';
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 1.5rem;
     }
 
     .payment-note p {
         color: var(--dark-light);
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.8rem;
+        font-weight: 500;
     }
 
     .payment-note p:last-child {
@@ -369,47 +577,100 @@
 
     .empty-state {
         text-align: center;
-        padding: 4rem 2rem;
+        padding: 5rem 2rem;
         background: white;
         border-radius: var(--border-radius-lg);
         box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .empty-state::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%236c757d' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.3;
     }
 
     .empty-icon {
-        font-size: 4rem;
+        font-size: 5rem;
         color: var(--text-lighter);
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+        40% {
+            transform: translateY(-10px);
+        }
+        60% {
+            transform: translateY(-5px);
+        }
     }
 
     .empty-state h3 {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         color: var(--dark-light);
         margin-bottom: 1rem;
+        font-weight: 700;
+        position: relative;
     }
 
     .empty-state p {
         color: var(--text-light);
-        margin-bottom: 2rem;
+        margin-bottom: 2.5rem;
+        font-size: 1.1rem;
+        position: relative;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .action-buttons {
         display: flex;
-        gap: 1rem;
+        gap: 1.5rem;
         justify-content: center;
         flex-wrap: wrap;
+        position: relative;
     }
 
     .btn {
-        padding: 1rem 2rem;
+        padding: 1.2rem 2.5rem;
         border-radius: var(--border-radius);
-        font-weight: 600;
+        font-weight: 700;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.8rem;
         transition: var(--transition);
         border: none;
         cursor: pointer;
+        font-size: 1.1rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: 0.5s;
+    }
+
+    .btn:hover::before {
+        left: 100%;
     }
 
     .btn-primary {
@@ -420,7 +681,7 @@
 
     .btn-primary:hover {
         background: linear-gradient(135deg, var(--secondary), var(--primary));
-        transform: translateY(-2px);
+        transform: translateY(-3px);
         box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4);
     }
 
@@ -434,7 +695,7 @@
     .btn-secondary:hover {
         background: var(--primary);
         color: white;
-        transform: translateY(-2px);
+        transform: translateY(-3px);
         box-shadow: 0 8px 25px rgba(67, 97, 238, 0.2);
     }
 
@@ -449,7 +710,12 @@
         }
 
         .page-header h2 {
-            font-size: 2rem;
+            font-size: 2.2rem;
+        }
+
+        .stats-overview {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
         }
 
         .enrollment-card,
@@ -458,16 +724,46 @@
         }
 
         .days-number {
-            font-size: 2.5rem;
+            font-size: 3rem;
         }
 
         .bank-details {
             grid-template-columns: 1fr;
         }
+
+        .action-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn {
+            width: 100%;
+            max-width: 300px;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-header h2 {
+            font-size: 1.8rem;
+        }
+
+        .payment-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        .card-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
     }
 </style>
 
 <div class="floating-shapes">
+    <div class="shape"></div>
     <div class="shape"></div>
     <div class="shape"></div>
     <div class="shape"></div>
@@ -480,50 +776,46 @@
 <div class="enrollment-container">
     <div class="page-header">
         <h2>My Enrollment & Days Remaining</h2>
-        <p>Track your enrollment status and remaining access days</p>
+        <p>Track your enrollment status and remaining access days to continue your learning journey</p>
     </div>
 
     {% if enrollments %}
-    <div class="enrollment-content">
-        {% for e in enrollments %}
-        <div class="enrollment-card">
-            <div class="card-header">
+    <!-- Statistics Overview -->
+    <div class="stats-overview">
+        <div class="stat-card">
+            <div class="stat-icon">
                 <i class="fas fa-calendar-check"></i>
-                <h3>Enrollment Details</h3>
             </div>
-            
-            <div class="days-counter">
-                <div class="days-number">{{ e.days_remaining }}</div>
-                <div class="days-label">Days Remaining</div>
-            </div>
-
-            <div class="status-badge {% if e.status == 'Active' %}status-active{% elif e.status == 'Pending' %}status-pending{% else %}status-expired{% endif %}">
-                <i class="fas fa-circle"></i>
-                {{ e.status }}
-            </div>
-
-            <div class="enrollment-details">
-                <div class="detail-item">
-                    <span class="detail-label">Enrollment Date:</span>
-                    <span class="detail-value">{{ e.enrollment_date }}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Days Used:</span>
-                    <span class="detail-value">{{ 30 - e.days_remaining if e.days_remaining else 0 }}/30</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Renewal Required:</span>
-                    <span class="detail-value">
-                        {% if e.days_remaining <= 7 %}
-                        <span style="color: var(--warning); font-weight: 600;">Soon</span>
-                        {% else %}
-                        <span style="color: var(--success);">Not Yet</span>
-                        {% endif %}
-                    </span>
-                </div>
-            </div>
+            <div class="stat-number">{{ enrollments|length }}</div>
+            <div class="stat-label">Active Enrollments</div>
         </div>
-        {% endfor %}
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-number">{{ enrollments[0].days_remaining if enrollments else 0 }}</div>
+            <div class="stat-label">Days Remaining</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-number">{{ ((31 - (enrollments[0].days_remaining if enrollments else 0)) / 31 * 100)|round|int }}%</div>
+            <div class="stat-label">Progress Used</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-number">
+                {% if enrollments and enrollments[0].days_remaining <= 7 %}
+                Soon
+                {% else %}
+                Safe
+                {% endif %}
+            </div>
+            <div class="stat-label">Renewal Status</div>
+        </div>
     </div>
 
     <div class="payment-section">
@@ -538,26 +830,26 @@
             <div class="bank-details">
                 <div class="bank-item">
                     <div class="bank-label">Bank Name</div>
-                    <div class="bank-value">{{ payment_info.bank_name }}</div>
+                    <div class="bank-value">{{ payment_info.bank_name | replace('\n', '<br>') | safe }}</div>
                 </div>
                 <div class="bank-item">
                     <div class="bank-label">Account Name</div>
                     <div class="bank-value">{{ payment_info.account_name }}</div>
                 </div>
                 <div class="bank-item">
-                    <div class="bank-label">Account Number</div>
-                    <div class="bank-value">{{ payment_info.account_number }}</div>
+                    <div class="bank-label">Account Numbers</div>
+                    <div class="bank-value">{{ payment_info.account_number | replace('\n', '<br>') | safe}}</div>
                 </div>
                 <div class="bank-item">
-                    <div class="bank-label">Reference</div>
+                    <div class="bank-label">Reference Number</div>
                     <div class="bank-value">{{ payment_info.reference }}</div>
                 </div>
             </div>
         </div>
 
         <div class="payment-note">
-            <p><strong>Important:</strong> After payment, please allow up to 24 hours for your days to be updated.</p>
-            <p>If your days are not added after 24 hours, contact the admin immediately.</p>
+            <p><strong>Important Notice:</strong> After making your payment, please allow up to 24 hours for your days to be updated in the system.</p>
+            <p>If your days are not added after 24 hours, please contact the administration immediately for assistance.</p>
         </div>
     </div>
 
@@ -567,14 +859,14 @@
             <i class="fas fa-calendar-times"></i>
         </div>
         <h3>No Active Enrollments</h3>
-        <p>You do not have any active enrollments yet. Please contact administration to get started with your learning journey.</p>
+        <p>You don't have any active enrollments at the moment. Start your learning journey by enrolling in our courses and get access to premium educational content.</p>
         
         <div class="action-buttons">
             <a href="/student/dashboard" class="btn btn-primary">
                 <i class="fas fa-home"></i> Back to Dashboard
             </a>
             <a href="/student/request" class="btn btn-secondary">
-                <i class="fas fa-paper-plane"></i> Contact Admin
+                <i class="fas fa-paper-plane"></i> Contact Administration
             </a>
         </div>
     </div>
@@ -588,5 +880,48 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+    // Add interactive animations
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate stat cards on scroll
+        const statCards = document.querySelectorAll('.stat-card');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        statCards.forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.6s ease-out';
+            observer.observe(card);
+        });
+
+        // Add hover effects to bank items
+        const bankItems = document.querySelectorAll('.bank-item');
+        bankItems.forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px) scale(1.02)';
+            });
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Update days counter animation based on remaining days
+        const daysNumber = document.querySelector('.days-number');
+        if (daysNumber) {
+            const days = parseInt(daysNumber.textContent);
+            if (days <= 7) {
+                daysNumber.style.animation = 'pulse 2s infinite';
+            }
+        }
+    });
+</script>
 
 {% endblock %}

@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Course Contents - Edu Boost Up</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon-32x32.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/favicon-180x180.png') }}">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -565,175 +569,99 @@
         </div>
 
         <div class="contents-accordion">
-            <div class="lesson-card">
-                <div class="lesson-header" onclick="toggleLesson('lesson-1')">
-                    <div class="header-content">
-                        <div class="lesson-title-section">
-                            <h3 class="lesson-title">Introduction to Algebra</h3>
-                            <div class="lesson-meta">
-                                <span class="lesson-type">Lecture</span>
-                                <span class="mentor-info">
-                                    <i class="fas fa-chalkboard-teacher"></i>
-                                    Dr. Sarah Johnson
-                                </span>
-                                <span class="upload-date">
-                                    <i class="fas fa-calendar"></i>
-                                    2023-10-15
-                                </span>
-                            </div>
-                        </div>
-                        <div class="expand-indicator">
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
+
+{% for c in contents %}
+    <div class="lesson-card">
+        <div class="lesson-header" onclick="toggleLesson('lesson-{{ c.content_id }}')">
+            <div class="header-content">
+                <div class="lesson-title-section">
+                    <h3 class="lesson-title">{{ c.title }}</h3>
+                    <div class="lesson-meta">
+                        <span class="lesson-type">{{ c.type }}</span>
+                        <span class="mentor-info">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            {{ c.mentor_name }} {{ c.mentor_surname }}
+                        </span>
+                        <span class="upload-date">
+                            <i class="fas fa-calendar"></i>
+                            {{ c.upload_date }}
+                        </span>
                     </div>
                 </div>
-
-                <div class="lesson-content" id="lesson-1">
-                    <div class="lesson-description">
-                        <p>This lesson introduces the fundamental concepts of algebra, including variables, expressions, and basic equations. We'll explore how to solve linear equations and apply algebraic thinking to real-world problems.</p>
-                    </div>
-
-                    <div class="resources-section">
-                        <div class="resource-category">
-                            <h4><i class="fas fa-file-pdf"></i> Download Study Materials</h4>
-                            <div class="download-options">
-                                <div class="download-card">
-                                    <div class="download-icon">
-                                        <i class="fas fa-file-pdf"></i>
-                                    </div>
-                                    <div class="download-info">
-                                        <h5>Algebra Basics Guide</h5>
-                                        <p>Complete study guide for this lesson</p>
-                                    </div>
-                                    <a href="#" class="btn btn-primary">
-                                        View / Open PDF
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="resource-category">
-                            <h4><i class="fas fa-play-circle"></i> Watch Lesson & Resources</h4>
-                            <div class="media-resources">
-                                <div class="media-card">
-                                    <div class="media-icon">
-                                        <i class="fas fa-video"></i>
-                                    </div>
-                                    <div class="media-info">
-                                        <h5>Video Lesson</h5>
-                                        <p>Uploaded: 2023-10-15</p>
-                                        <p class="resource-url">https://youtube.com/watch?v=algebra_intro</p>
-                                    </div>
-                                    <div class="media-actions">
-                                        <a href="#" target="_blank" class="action-btn watch-btn">
-                                            <i class="fas fa-play"></i> Watch
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="media-card">
-                                    <div class="media-icon">
-                                        <i class="fas fa-external-link-alt"></i>
-                                    </div>
-                                    <div class="media-info">
-                                        <h5>Practice Problems</h5>
-                                        <p>Uploaded: 2023-10-15</p>
-                                        <p class="resource-url">https://example.com/algebra-practice</p>
-                                    </div>
-                                    <div class="media-actions">
-                                        <a href="#" target="_blank" class="action-btn view-btn">
-                                            <i class="fas fa-external-link-alt"></i> Open
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="lesson-card">
-                <div class="lesson-header" onclick="toggleLesson('lesson-2')">
-                    <div class="header-content">
-                        <div class="lesson-title-section">
-                            <h3 class="lesson-title">Quadratic Equations</h3>
-                            <div class="lesson-meta">
-                                <span class="lesson-type">Tutorial</span>
-                                <span class="mentor-info">
-                                    <i class="fas fa-chalkboard-teacher"></i>
-                                    Prof. Michael Chen
-                                </span>
-                                <span class="upload-date">
-                                    <i class="fas fa-calendar"></i>
-                                    2023-10-22
-                                </span>
-                            </div>
-                        </div>
-                        <div class="expand-indicator">
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="lesson-content" id="lesson-2">
-                    <div class="lesson-description">
-                        <p>In this lesson, we'll dive into quadratic equations, exploring different methods for solving them including factoring, completing the square, and using the quadratic formula. We'll also examine the graphical representation of quadratic functions.</p>
-                    </div>
-
-                    <div class="resources-section">
-                        <div class="resource-category">
-                            <h4><i class="fas fa-file-pdf"></i> Download Study Materials</h4>
-                            <div class="download-options">
-                                <div class="download-card">
-                                    <div class="download-icon">
-                                        <i class="fas fa-file-pdf"></i>
-                                    </div>
-                                    <div class="download-info">
-                                        <h5>Quadratic Equations Workbook</h5>
-                                        <p>Complete study guide for this lesson</p>
-                                    </div>
-                                    <a href="#" class="btn btn-primary">
-                                        View / Open PDF
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="resource-category">
-                            <h4><i class="fas fa-play-circle"></i> Watch Lesson & Resources</h4>
-                            <div class="media-resources">
-                                <div class="media-card">
-                                    <div class="media-icon">
-                                        <i class="fas fa-video"></i>
-                                    </div>
-                                    <div class="media-info">
-                                        <h5>Video Lesson</h5>
-                                        <p>Uploaded: 2023-10-22</p>
-                                        <p class="resource-url">https://vimeo.com/quadratic_equations</p>
-                                    </div>
-                                    <div class="media-actions">
-                                        <a href="#" target="_blank" class="action-btn watch-btn">
-                                            <i class="fas fa-play"></i> Watch
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="expand-indicator">
+                    <i class="fas fa-chevron-down"></i>
                 </div>
             </div>
         </div>
 
-        <div class="navigation-actions">
-            <a href="/student/dashboard/courses" class="nav-btn secondary">
-                <i class="fas fa-arrow-left"></i> Back to Courses
-            </a>
-            <a href="/student/dashboard" class="nav-btn primary">
-                <i class="fas fa-home"></i> Back to Dashboard
-            </a>
+        <div class="lesson-content" id="lesson-{{ c.content_id }}">
+            <div class="lesson-description">
+                <p>{{ c.description }}</p>
+            </div>
+
+            <div class="resources-section">
+
+                {% if c.file_url %}
+                <div class="resource-category">
+                    <h4><i class="fas fa-file-pdf"></i> Download Study Materials</h4>
+                    <div class="download-options">
+                        <div class="download-card">
+                            <div class="download-icon"><i class="fas fa-file-pdf"></i></div>
+                            <div class="download-info">
+                                <h5>{{ c.file_name }}</h5>
+                                <p>Size: {{ c.file_size_mb }} MB</p>
+                            </div>
+                            <a href="{{ c.file_url }}" target="_blank" class="btn btn-primary">
+                                View / Open PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if content_links[c.content_id] %}
+                <div class="resource-category">
+                    <h4><i class="fas fa-play-circle"></i> Watch Lesson & Resources</h4>
+                    <div class="media-resources">
+                        {% for link in content_links[c.content_id] %}
+                        <div class="media-card">
+                            <div class="media-icon"><i class="fas fa-video"></i></div>
+                            <div class="media-info">
+                                <h5>Video / Resource Link</h5>
+                                <p>Uploaded: {{ link.upload_date }}</p>
+                                <p class="resource-url">{{ link.file_link }}</p>
+                            </div>
+                            <div class="media-actions">
+                                <a href="{{ link.file_link }}" target="_blank" class="action-btn watch-btn">
+                                    <i class="fas fa-play"></i> Open / Watch
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
         </div>
+    </div>
+{% endfor %}
+</div>
+
+<div class="navigation-actions">
+    <a href="/student/dashboard/courses" class="nav-btn secondary">
+        <i class="fas fa-arrow-left"></i> Back to Courses
+    </a>
+    <a href="/student/dashboard" class="nav-btn primary">
+        <i class="fas fa-home"></i> Back to Dashboard
+    </a>
+</div>
+
     </div>
 
     <script>
+
+        
         function toggleLesson(lessonId) {
             const lessonContent = document.getElementById(lessonId);
             const lessonHeader = lessonContent.previousElementSibling;

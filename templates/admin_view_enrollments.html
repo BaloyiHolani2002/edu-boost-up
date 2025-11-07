@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enrollments Management - Edu Boost Up</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon-32x32.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/favicon-180x180.png') }}">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -563,7 +567,7 @@
                             <td>
                                 <form action="{{ url_for('add_enrollment_days') }}" method="POST" class="action-form">
                                     <input type="hidden" name="enrollment_id" value="{{ e.enrollment_id }}">
-                                    <input type="number" name="additional_days" min="1" max="365" class="days-input" placeholder="Days" required>
+                                    <input type="number" name="additional_days" min="1" max="365" class="days-input" value="31" required>
                                     <button type="submit" class="btn btn-primary">
                                         <i class="fas fa-plus"></i> Add
                                     </button>

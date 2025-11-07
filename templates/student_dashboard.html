@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard - Edu Boost Up</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon-32x32.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/favicon-180x180.png') }}">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -321,19 +325,239 @@
             color: var(--secondary);
         }
 
-        /* Video Container */
-        .video-container {
+        /* Enhanced Video Container */
+        .video-section {
             background: white;
             border-radius: var(--border-radius-lg);
             padding: 2rem;
             margin-bottom: 2rem;
             box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .video-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .video-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .video-title i {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .video-title h3 {
+            color: var(--secondary);
+            font-size: 1.4rem;
+        }
+
+        .video-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .video-control-btn {
+            background: var(--light);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .video-control-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .video-container-wrapper {
+            position: relative;
+            background: #000;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            transition: var(--transition);
+        }
+
+        .video-container-wrapper:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3);
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            border: 3px solid transparent;
+            border-radius: var(--border-radius);
             overflow: hidden;
         }
 
+        .video-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary), var(--accent), var(--success), var(--warning));
+            z-index: -1;
+            border-radius: calc(var(--border-radius) + 2px);
+            animation: borderGlow 3s linear infinite;
+            background-size: 400%;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
         .video-container iframe {
-            border-radius: var(--border-radius);
+            width: 100%;
+            height: 100%;
             border: none;
+            display: block;
+        }
+
+        .play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: var(--transition);
+            z-index: 2;
+            cursor: pointer;
+        }
+
+        .play-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .play-button {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            transition: var(--transition);
+            box-shadow: 0 10px 30px rgba(67, 97, 238, 0.4);
+            position: relative;
+            animation: pulse 2s infinite;
+        }
+
+        .play-button::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border: 2px solid var(--primary-light);
+            border-radius: 50%;
+            animation: ripple 2s infinite;
+        }
+
+        .play-button::after {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            border: 1px solid var(--accent-light);
+            border-radius: 50%;
+            animation: ripple 2s infinite 0.5s;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 10px 30px rgba(67, 97, 238, 0.4);
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 15px 40px rgba(67, 97, 238, 0.6);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 10px 30px rgba(67, 97, 238, 0.4);
+            }
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .play-button:hover {
+            transform: scale(1.2);
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+        }
+
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 3;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .video-info {
+            padding: 1.5rem 0 0 0;
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        .video-info h4 {
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
         }
 
         /* Mentors Grid */
@@ -456,6 +680,22 @@
                 text-align: center;
                 padding: 0.8rem;
             }
+
+            .video-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .video-container {
+                height: 250px;
+            }
+
+            .play-button {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
         }
 
         @media (max-width: 480px) {
@@ -485,6 +725,16 @@
                 flex-direction: column;
                 text-align: center;
                 gap: 1rem;
+            }
+
+            .video-container {
+                height: 200px;
+            }
+
+            .play-button {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
             }
         }
     </style>
@@ -564,10 +814,46 @@
                 <i class="fas fa-play-circle"></i>
                 <h2>Platform Guide</h2>
             </div>
-            <div class="video-container" >
-                <iframe src="https://drive.google.com/file/d/1K_6L1fpYetRd-c4EJshdiwd9F0X6Il59/preview" width="100%"
-                    height="380" allow="autoplay" allowfullscreen>
-                </iframe>
+
+            <div class="video-section">
+                <div class="video-header">
+                    <div class="video-title">
+                        <i class="fas fa-video"></i>
+                        <h3>Getting Started with Edu Boost Up</h3>
+                    </div>
+                    <div class="video-controls">
+                        <button class="video-control-btn" title="Fullscreen">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <button class="video-control-btn" title="Settings">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="video-container-wrapper">
+                    <div class="loading-spinner" id="loadingSpinner"></div>
+                    
+                    <div class="video-container">
+                        <div class="play-overlay" id="playOverlay">
+                            <div class="play-button">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+
+                        <iframe src="https://drive.google.com/file/d/1K_6L1fpYetRd-c4EJshdiwd9F0X6Il59/preview" 
+                                width="100%" height="380" 
+                                allow="autoplay" 
+                                allowfullscreen
+                                id="videoFrame">
+                        </iframe>
+                    </div>
+                </div>
+
+                <div class="video-info">
+                    <h4>About This Guide</h4>
+                    <p>Learn how to navigate the Edu Boost Up platform, access your courses, interact with mentors, and make the most of your learning experience. This comprehensive guide will help you get started quickly.</p>
+                </div>
             </div>
 
             <!-- Mentors Section -->
@@ -603,8 +889,8 @@
     </div>
 
     <script>
-        // Add active state to navigation
         document.addEventListener('DOMContentLoaded', function() {
+            // Navigation active state
             const currentPath = window.location.pathname;
             const navLinks = document.querySelectorAll('.nav-link');
             
@@ -614,21 +900,67 @@
                 }
             });
 
-            // Add smooth scrolling
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    document.querySelector(this.getAttribute('href')).scrollIntoView({
-                        behavior: 'smooth'
-                    });
-                });
-            });
+            // Video player functionality
+            const playOverlay = document.getElementById('playOverlay');
+            const videoFrame = document.getElementById('videoFrame');
+            const loadingSpinner = document.getElementById('loadingSpinner');
 
-            // Add loading animation
+            // Play button click handler
+            if (playOverlay) {
+                playOverlay.addEventListener('click', function() {
+                    // Show loading spinner
+                    loadingSpinner.style.display = 'block';
+                    
+                    // Hide play overlay with delay for smooth transition
+                    setTimeout(() => {
+                        playOverlay.classList.add('hidden');
+                        
+                        // Hide loading spinner after a delay
+                        setTimeout(() => {
+                            loadingSpinner.style.display = 'none';
+                        }, 2000);
+                    }, 500);
+                });
+            }
+
+            // Add hover effect to video container
+            const videoContainer = document.querySelector('.video-container-wrapper');
+            const playButton = document.querySelector('.play-button');
+            
+            if (videoContainer && playButton) {
+                videoContainer.addEventListener('mouseenter', function() {
+                    if (!playOverlay.classList.contains('hidden')) {
+                        playButton.style.transform = 'scale(1.15)';
+                    }
+                });
+
+                videoContainer.addEventListener('mouseleave', function() {
+                    if (!playOverlay.classList.contains('hidden')) {
+                        playButton.style.transform = 'scale(1)';
+                    }
+                });
+            }
+
+            // Mentor card animations
             const mentorCards = document.querySelectorAll('.mentor-card');
             mentorCards.forEach((card, index) => {
                 card.style.animationDelay = `${index * 0.1}s`;
             });
+
+            // Fullscreen functionality
+            const fullscreenBtn = document.querySelector('.video-control-btn .fa-expand')?.closest('.video-control-btn');
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', function() {
+                    const videoWrapper = document.querySelector('.video-container-wrapper');
+                    if (videoWrapper.requestFullscreen) {
+                        videoWrapper.requestFullscreen();
+                    } else if (videoWrapper.webkitRequestFullscreen) {
+                        videoWrapper.webkitRequestFullscreen();
+                    } else if (videoWrapper.msRequestFullscreen) {
+                        videoWrapper.msRequestFullscreen();
+                    }
+                });
+            }
         });
     </script>
 </body>

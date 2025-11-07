@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Requests - Edu Boost Up</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon-32x32.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/favicon-180x180.png') }}">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -595,7 +599,7 @@
                             <td>
                                 <div class="student-info">
                                     <div class="student-name">{{ r.student_name }} {{ r.student_surname }}</div>
-                                    <div class="student-email">{{ r.student_email }}</div>
+                                    <div class="student-email">{{ r.student_phone }}</div>
                                 </div>
                             </td>
                             <td class="topic">{{ r.topic }}</td>
