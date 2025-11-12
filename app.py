@@ -19,62 +19,19 @@ from psycopg2.extras import RealDictCursor
 from datetime import datetime
 from functools import wraps
 from flask import session, redirect
-import urllib.parse
-import sqlite3
+
 
 app = Flask(__name__)
 app.secret_key = 'edu-boost-up-secret-key-2024'
 
-# Database configuration - Auto-detect database type
-def get_database_config():
-    """Get database configuration from environment variable or use local fallback"""
-    database_url = os.environ.get('DATABASE_URL')
-    
-    if database_url:
-        print(f"🔍 Found DATABASE_URL: {database_url}")
-        
-        # Check if it's a SQLite database URL
-        if database_url.startswith('sqlite:///'):
-            return {
-                'type': 'sqlite',
-                'database': database_url.replace('sqlite:///', ''),
-                'is_hosted': False
-            }
-        # Check if it's a PostgreSQL database URL
-        elif database_url.startswith('postgres://') or database_url.startswith('postgresql://'):
-            try:
-                if database_url.startswith('postgres://'):
-                    database_url = database_url.replace('postgres://', 'postgresql://', 1)
-                
-                parsed = urllib.parse.urlparse(database_url)
-                
-                return {
-                    'type': 'postgresql',
-                    'host': parsed.hostname,
-                    'database': parsed.path[1:],  # Remove leading slash
-                    'user': parsed.username,
-                    'password': parsed.password,
-                    'port': parsed.port or 5432,
-                    'is_hosted': True
-                }
-            except Exception as e:
-                print(f"Error parsing PostgreSQL DATABASE_URL: {e}")
-                # Fall back to local configuration
-                pass
-    
-    # Local development configuration - PostgreSQL
-    print("🔍 No DATABASE_URL found, using local PostgreSQL configuration")
-    return {
-        'type': 'postgresql',
-        'host': 'localhost',
-        'database': 'eduboostup',
-        'user': 'postgres',
-        'password': 'Admin123',
-        'port': '5432',
-        'is_hosted': False
-    }
-
-DB_CONFIG = get_database_config()
+# Database configuration
+DB_CONFIG = {
+    'host': 'localhost',
+    'database': 'eduboostup',  # Change to your actual database name
+    'user': 'postgres',
+    'password': 'Admin123',
+    'port': '5432'
+}
 
 # ✅ Initialize scheduler
 scheduler = APScheduler()
@@ -82,72 +39,19 @@ scheduler.init_app(app)
 scheduler.start()
 
 def get_db_connection():
-    """Create and return a database connection - auto-detects database type"""
+    """Create and return a database connection"""
     try:
-        if DB_CONFIG['type'] == 'sqlite':
-            print("💾 Connecting to SQLite database...")
-            conn = sqlite3.connect(DB_CONFIG['database'])
-            conn.row_factory = sqlite3.Row  # This enables column access by name
-            return conn
-        else:
-            # PostgreSQL connection
-            if DB_CONFIG.get('is_hosted', False):
-                print("🌐 Connecting to hosted PostgreSQL database...")
-                # Reconstruct the database URL for hosted environments
-                database_url = f"postgresql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['database']}"
-                conn = psycopg2.connect(
-                    database_url,
-                    sslmode='require' if os.environ.get('REQUIRE_SSL') else 'prefer'
-                )
-            else:
-                print("💻 Connecting to local PostgreSQL database...")
-                conn = psycopg2.connect(
-                    host=DB_CONFIG['host'],
-                    database=DB_CONFIG['database'],
-                    user=DB_CONFIG['user'],
-                    password=DB_CONFIG['password'],
-                    port=DB_CONFIG['port']
-                )
-            return conn
+        conn = psycopg2.connect(
+            host=DB_CONFIG['host'],
+            database=DB_CONFIG['database'],
+            user=DB_CONFIG['user'],
+            password=DB_CONFIG['password'],
+            port=DB_CONFIG['port']
+        )
+        return conn
     except Exception as e:
         print(f"Database connection error: {e}")
         return None
-
-def get_cursor(conn):
-    """Get appropriate cursor based on database type"""
-    if DB_CONFIG['type'] == 'sqlite':
-        return conn.cursor()
-    else:
-        return conn.cursor(cursor_factory=RealDictCursor)
-
-def fetch_one(cur):
-    """Fetch one row with proper dictionary conversion for SQLite"""
-    if DB_CONFIG['type'] == 'sqlite':
-        result = cur.fetchone()
-        if result:
-            # Convert sqlite3.Row to dictionary
-            return dict(result)
-        return None
-    else:
-        return cur.fetchone()
-
-def fetch_all(cur):
-    """Fetch all rows with proper dictionary conversion for SQLite"""
-    if DB_CONFIG['type'] == 'sqlite':
-        results = cur.fetchall()
-        return [dict(row) for row in results]
-    else:
-        return cur.fetchall()
-
-def execute_query(cur, query, params=None):
-    """Execute query with appropriate parameter placeholder"""
-    if DB_CONFIG['type'] == 'sqlite':
-        # Convert %s placeholders to ? for SQLite
-        query = query.replace('%s', '?')
-    if params:
-        cur.execute(query, params)
-    else:
-        cur.execute(query)
 
 # Initialize database tables (run once)
 def init_db():
@@ -157,270 +61,133 @@ def init_db():
         try:
             cur = conn.cursor()
             
-            # Adjust SQL syntax based on database type
-            if DB_CONFIG['type'] == 'sqlite':
-                # SQLite specific table creation
-                tables = [
-                    """
-                    CREATE TABLE IF NOT EXISTS Admin (
-                        admin_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        name VARCHAR(100) NOT NULL,
-                        email VARCHAR(100) UNIQUE NOT NULL,
-                        password VARCHAR(255) NOT NULL,
-                        role VARCHAR(50),
-                        create_at DATE DEFAULT CURRENT_DATE
-                    )
-                    """,
-                    """
-                    CREATE TABLE IF NOT EXISTS Student (
-                        student_id VARCHAR(13) PRIMARY KEY,
-                        name VARCHAR(100) NOT NULL,
-                        surname VARCHAR(100) NOT NULL,
-                        email VARCHAR(100) UNIQUE NOT NULL,
-                        phone VARCHAR(20),
-                        grade VARCHAR(10),
-                        password VARCHAR(255) NOT NULL,
-                        profile_image VARCHAR(255),
-                        join_date DATE DEFAULT CURRENT_DATE,
-                        status VARCHAR(20) DEFAULT 'active'
-                    )
-                    """,
-                    """
-                    CREATE TABLE IF NOT EXISTS Mentor (
-                        mentor_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        name VARCHAR(100) NOT NULL,
-                        surname VARCHAR(100) NOT NULL,
-                        email VARCHAR(100) UNIQUE NOT NULL,
-                        phone VARCHAR(20),
-                        subject_speciality VARCHAR(100),
-                        password VARCHAR(255) NOT NULL,
-                        bio TEXT,
-                        profile_image VARCHAR(255),
-                        join_date DATE DEFAULT CURRENT_DATE,
-                        status VARCHAR(20) DEFAULT 'active'
-                    )
-                    """,
-                    """
-                    CREATE TABLE IF NOT EXISTS Content (
-                        content_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        mentor_id INTEGER,
-                        title VARCHAR(255) NOT NULL,
-                        description TEXT,
-                        type VARCHAR(50),
-                        file_url VARCHAR(255),
-                        subject VARCHAR(100),
-                        grade VARCHAR(10),
-                        upload_date DATE DEFAULT CURRENT_DATE
-                    )
-                    """,
-                    """
-                    CREATE TABLE IF NOT EXISTS ContentRecord (
-                        record_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        content_id INTEGER,
-                        file_link VARCHAR(255),
-                        upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                    """,
-                    """
-                    CREATE TABLE IF NOT EXISTS Class (
-                        class_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        mentor_id INTEGER,
-                        title VARCHAR(255) NOT NULL,
-                        topic VARCHAR(255),
-                        type VARCHAR(50),
-                        start_time TIMESTAMP,
-                        duration VARCHAR(50),
-                        grade VARCHAR(10),
-                        link VARCHAR(255),
-                        upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                    """,
-                    """
-                    CREATE TABLE IF NOT EXISTS Request (
-                        request_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        student_id VARCHAR(13),
-                        mentor_id INTEGER,
-                        topic VARCHAR(255),
-                        message TEXT,
-                        request_type VARCHAR(50),
-                        status VARCHAR(20) DEFAULT 'pending',
-                        created_at DATE DEFAULT CURRENT_DATE,
-                        pdf_url VARCHAR(255)
-                    )
-                    """,
-                    """
-                    CREATE TABLE IF NOT EXISTS Enrollment (
-                        enrollment_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        student_id VARCHAR(13),
-                        class_id INTEGER,
-                        enrollment_days INTEGER DEFAULT 20,
-                        days_remaining INTEGER DEFAULT 20,
-                        status VARCHAR(20) DEFAULT 'active',
-                        enrollment_date DATE DEFAULT CURRENT_DATE,
-                        last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                    """,
-                    """
-                    CREATE TABLE IF NOT EXISTS Payment (
-                        payment_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        student_id VARCHAR(13),
-                        amount DECIMAL(10,2),
-                        payment_date DATE DEFAULT CURRENT_DATE,
-                        status VARCHAR(20),
-                        billing_cycle_end DATE
-                    )
-                    """,
-                    """
-                    CREATE TABLE IF NOT EXISTS Notification (
-                        notification_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        student_id VARCHAR(13),
-                        message TEXT,
-                        date_sent DATE DEFAULT CURRENT_DATE,
-                        is_read BOOLEAN DEFAULT FALSE
-                    )
-                    """
-                ]
-            else:
-                # PostgreSQL specific table creation
-                tables = [
-                    """
-                    CREATE TABLE IF NOT EXISTS Admin (
-                        admin_id SERIAL PRIMARY KEY,
-                        name VARCHAR(100) NOT NULL,
-                        email VARCHAR(100) UNIQUE NOT NULL,
-                        password VARCHAR(255) NOT NULL,
-                        role VARCHAR(50),
-                        create_at DATE DEFAULT CURRENT_DATE
-                    )
-                    """,
-                    """
-                    CREATE TABLE IF NOT EXISTS Student (
-                        student_id VARCHAR(13) PRIMARY KEY,
-                        name VARCHAR(100) NOT NULL,
-                        surname VARCHAR(100) NOT NULL,
-                        email VARCHAR(100) UNIQUE NOT NULL,
-                        phone VARCHAR(20),
-                        grade VARCHAR(10),
-                        password VARCHAR(255) NOT NULL,
-                        profile_image VARCHAR(255),
-                        join_date DATE DEFAULT CURRENT_DATE,
-                        status VARCHAR(20) DEFAULT 'active'
-                    )
-                    """,
-                    """
-                    CREATE TABLE IF NOT EXISTS Mentor (
-                        mentor_id SERIAL PRIMARY KEY,
-                        name VARCHAR(100) NOT NULL,
-                        surname VARCHAR(100) NOT NULL,
-                        email VARCHAR(100) UNIQUE NOT NULL,
-                        phone VARCHAR(20),
-                        subject_speciality VARCHAR(100),
-                        password VARCHAR(255) NOT NULL,
-                        bio TEXT,
-                        profile_image VARCHAR(255),
-                        join_date DATE DEFAULT CURRENT_DATE,
-                        status VARCHAR(20) DEFAULT 'active'
-                    )
-                    """,
-                    """
-                    CREATE TABLE IF NOT EXISTS Content (
-                        content_id SERIAL PRIMARY KEY,
-                        mentor_id INTEGER,
-                        title VARCHAR(255) NOT NULL,
-                        description TEXT,
-                        type VARCHAR(50),
-                        file_url VARCHAR(255),
-                        subject VARCHAR(100),
-                        grade VARCHAR(10),
-                        upload_date DATE DEFAULT CURRENT_DATE
-                    )
-                    """,
-                    """
-                    CREATE TABLE IF NOT EXISTS ContentRecord (
-                        record_id SERIAL PRIMARY KEY,
-                        content_id INTEGER,
-                        file_link VARCHAR(255),
-                        upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                    """,
-                    """
-                    CREATE TABLE IF NOT EXISTS Class (
-                        class_id SERIAL PRIMARY KEY,
-                        mentor_id INTEGER,
-                        title VARCHAR(255) NOT NULL,
-                        topic VARCHAR(255),
-                        type VARCHAR(50),
-                        start_time TIMESTAMP,
-                        duration VARCHAR(50),
-                        grade VARCHAR(10),
-                        link VARCHAR(255),
-                        upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                    """,
-                    """
-                    CREATE TABLE IF NOT EXISTS Request (
-                        request_id SERIAL PRIMARY KEY,
-                        student_id VARCHAR(13),
-                        mentor_id INTEGER,
-                        topic VARCHAR(255),
-                        message TEXT,
-                        request_type VARCHAR(50),
-                        status VARCHAR(20) DEFAULT 'pending',
-                        created_at DATE DEFAULT CURRENT_DATE,
-                        pdf_url VARCHAR(255)
-                    )
-                    """,
-                    """
-                    CREATE TABLE IF NOT EXISTS Enrollment (
-                        enrollment_id SERIAL PRIMARY KEY,
-                        student_id VARCHAR(13),
-                        class_id INTEGER,
-                        enrollment_days INTEGER DEFAULT 20,
-                        days_remaining INTEGER DEFAULT 20,
-                        status VARCHAR(20) DEFAULT 'active',
-                        enrollment_date DATE DEFAULT CURRENT_DATE,
-                        last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                    """,
-                    """
-                    CREATE TABLE IF NOT EXISTS Payment (
-                        payment_id SERIAL PRIMARY KEY,
-                        student_id VARCHAR(13),
-                        amount DECIMAL(10,2),
-                        payment_date DATE DEFAULT CURRENT_DATE,
-                        status VARCHAR(20),
-                        billing_cycle_end DATE
-                    )
-                    """,
-                    """
-                    CREATE TABLE IF NOT EXISTS Notification (
-                        notification_id SERIAL PRIMARY KEY,
-                        student_id VARCHAR(13),
-                        message TEXT,
-                        date_sent DATE DEFAULT CURRENT_DATE,
-                        is_read BOOLEAN DEFAULT FALSE
-                    )
-                    """
-                ]
+            # Create tables
+            tables = [
+                """
+                CREATE TABLE IF NOT EXISTS Admin (
+                    admin_id SERIAL PRIMARY KEY,
+                    name VARCHAR(100) NOT NULL,
+                    email VARCHAR(100) UNIQUE NOT NULL,
+                    password VARCHAR(255) NOT NULL,
+                    role VARCHAR(50),
+                    create_at DATE DEFAULT CURRENT_DATE
+                )
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS Student (
+                    student_id VARCHAR(13) PRIMARY KEY,
+                    name VARCHAR(100) NOT NULL,
+                    surname VARCHAR(100) NOT NULL,
+                    email VARCHAR(100) UNIQUE NOT NULL,
+                    phone VARCHAR(20),
+                    grade VARCHAR(10),
+                    password VARCHAR(255) NOT NULL,
+                    profile_image VARCHAR(255),
+                    join_date DATE DEFAULT CURRENT_DATE,
+                    status VARCHAR(20) DEFAULT 'active'
+                )
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS Mentor (
+                    mentor_id SERIAL PRIMARY KEY,
+                    name VARCHAR(100) NOT NULL,
+                    surname VARCHAR(100) NOT NULL,
+                    email VARCHAR(100) UNIQUE NOT NULL,
+                    phone VARCHAR(20),
+                    subject_speciality VARCHAR(100),
+                    password VARCHAR(255) NOT NULL,
+                    bio TEXT,
+                    profile_image VARCHAR(255),
+                    join_date DATE DEFAULT CURRENT_DATE,
+                    status VARCHAR(20) DEFAULT 'active'
+                )
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS Content (
+                    content_id SERIAL PRIMARY KEY,
+                    mentor_id INTEGER,
+                    title VARCHAR(255) NOT NULL,
+                    description TEXT,
+                    type VARCHAR(50),
+                    file_url VARCHAR(255),
+                    subject VARCHAR(100),
+                    grade VARCHAR(10),
+                    upload_date DATE DEFAULT CURRENT_DATE
+                )
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS ContentRecord (
+                    record_id SERIAL PRIMARY KEY,
+                    content_id INTEGER,
+                    file_link VARCHAR(255),
+                    upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS Class (
+                    class_id SERIAL PRIMARY KEY,
+                    mentor_id INTEGER,
+                    title VARCHAR(255) NOT NULL,
+                    topic VARCHAR(255),
+                    type VARCHAR(50),
+                    start_time TIMESTAMP,
+                    duration VARCHAR(50),
+                    grade VARCHAR(10),
+                    link VARCHAR(255),
+                    upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS Request (
+                    request_id SERIAL PRIMARY KEY,
+                    student_id VARCHAR(13),
+                    mentor_id INTEGER,
+                    topic VARCHAR(255),
+                    message TEXT,
+                    request_type VARCHAR(50),
+                    status VARCHAR(20) DEFAULT 'pending',
+                    created_at DATE DEFAULT CURRENT_DATE,
+                    pdf_url VARCHAR(255)
+                )
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS Enrollment (
+                    enrollment_id SERIAL PRIMARY KEY,
+                    student_id VARCHAR(13),
+                    class_id INTEGER,
+                    enrollment_days INTEGER DEFAULT 20,
+                    days_remaining INTEGER DEFAULT 20,
+                    status VARCHAR(20) DEFAULT 'active',
+                    enrollment_date DATE DEFAULT CURRENT_DATE,
+                    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS Payment (
+                    payment_id SERIAL PRIMARY KEY,
+                    student_id VARCHAR(13),
+                    amount DECIMAL(10,2),
+                    payment_date DATE DEFAULT CURRENT_DATE,
+                    status VARCHAR(20),
+                    billing_cycle_end DATE
+                )
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS Notification (
+                    notification_id SERIAL PRIMARY KEY,
+                    student_id VARCHAR(13),
+                    message TEXT,
+                    date_sent DATE DEFAULT CURRENT_DATE,
+                    is_read BOOLEAN DEFAULT FALSE
+                )
+                """
+            ]
             
             for table in tables:
                 cur.execute(table)
             
-            # Insert default admin user if not exists
-            try:
-                if DB_CONFIG['type'] == 'sqlite':
-                    cur.execute("""
-                        INSERT OR IGNORE INTO Admin (name, email, password, role) 
-                        VALUES ('System Admin', 'admin@eduboostup.com', 'admin123', 'superadmin')
-                    """)
-                else:
-                    cur.execute("""
-                        INSERT INTO Admin (name, email, password, role) 
-                        VALUES ('System Admin', 'admin@eduboostup.com', 'admin123', 'superadmin')
-                        ON CONFLICT (email) DO NOTHING
-                    """)
-            except Exception as e:
-                print(f"Note: Admin user might already exist: {e}")
+            # Insert default admin user
+            
             
             conn.commit()
             cur.close()
@@ -443,7 +210,7 @@ def reduce_enrollment_days():
             print("🔄 Starting daily enrollment reduction...")
 
             # 1. Reduce days for active enrollments
-            execute_query(cur, """
+            cur.execute("""
                 UPDATE Enrollment 
                 SET days_remaining = days_remaining - 1,
                     last_updated = CURRENT_TIMESTAMP
@@ -453,7 +220,7 @@ def reduce_enrollment_days():
             reduced_count = cur.rowcount
 
             # 2. Mark expired where days reached 0
-            execute_query(cur, """
+            cur.execute("""
                 UPDATE Enrollment 
                 SET status = 'expired',
                     last_updated = CURRENT_TIMESTAMP
@@ -486,6 +253,7 @@ def scheduled_reduce_days():
 def index():
     return render_template('index.html')
 
+
 # ---------- Step 1: Identity confirmation (Email only) ----------
 @app.route("/reset", methods=["GET", "POST"])
 def reset_request():
@@ -497,19 +265,15 @@ def reset_request():
             return render_template("reset_request.html")
 
         conn = get_db_connection()
-        if not conn:
-            flash("❌ Database connection failed", "danger")
-            return render_template("reset_request.html")
-            
-        cur = get_cursor(conn)
+        cur = conn.cursor(cursor_factory=RealDictCursor)
         try:
             # Check if student exists
-            execute_query(cur, """
+            cur.execute("""
                 SELECT student_id, email 
                 FROM Student 
                 WHERE email = %s
             """, (email,))
-            student = fetch_one(cur)
+            student = cur.fetchone()
 
             if student:
                 # Save temporary session info for reset
@@ -524,6 +288,7 @@ def reset_request():
             conn.close()
 
     return render_template("reset_request.html")
+
 
 # ---------- Step 2: Reset password ----------
 @app.route("/reset/password", methods=["GET", "POST"])
@@ -545,14 +310,10 @@ def reset_password():
             email = session['reset_email']
 
             conn = get_db_connection()
-            if not conn:
-                flash("❌ Database connection failed", "danger")
-                return render_template("reset_password.html")
-                
             cur = conn.cursor()
             try:
-                # Update student password
-                execute_query(cur, """
+                # Update student password (hashing recommended!)
+                cur.execute("""
                     UPDATE Student 
                     SET password = %s 
                     WHERE student_id = %s AND email = %s
@@ -572,6 +333,7 @@ def reset_password():
 
     return render_template("reset_password.html")
 
+
 # ✅ Manual test route for day reduction
 @app.route('/admin/test-reduce-days')
 def test_reduce_days():
@@ -588,6 +350,7 @@ if not os.path.exists(UPLOAD_FOLDER):
 def uploaded_file(filename):
     return send_from_directory('uploads', filename)
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -599,16 +362,16 @@ def login():
             return render_template('studentLogin.html', error='Database Connection Failed')
 
         try:
-            cur = get_cursor(conn)
+            cur = conn.cursor(cursor_factory=RealDictCursor)
 
             # -------------------------
             # 1️⃣ Check Student Login
             # -------------------------
-            execute_query(cur, """
+            cur.execute("""
                 SELECT * FROM Student 
                 WHERE email = %s AND password = %s AND status = 'active'
             """, (email, password))
-            student = fetch_one(cur)
+            student = cur.fetchone()
 
             if student:
                 session['user_id'] = student['student_id']
@@ -623,11 +386,11 @@ def login():
             # -------------------------
             # 2️⃣ Check Mentor Login
             # -------------------------
-            execute_query(cur, """
+            cur.execute("""
                 SELECT * FROM Mentor
                 WHERE email = %s AND password = %s AND status = 'active'
             """, (email, password))
-            mentor = fetch_one(cur)
+            mentor = cur.fetchone()
 
             if mentor:
                 session['user_id'] = mentor['mentor_id']
@@ -641,11 +404,11 @@ def login():
             # -------------------------
             # 3️⃣ Check Admin Login
             # -------------------------
-            execute_query(cur, """
+            cur.execute("""
                 SELECT * FROM Admin 
                 WHERE email = %s AND password = %s
             """, (email, password))
-            admin = fetch_one(cur)
+            admin = cur.fetchone()
 
             if admin:
                 session['user_id'] = admin['admin_id']
@@ -683,14 +446,14 @@ def student_dashboard():
     grade = session.get('grade')
 
     conn = get_db_connection()
-    cur = get_cursor(conn)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
         # ----------------------------
         # 2️⃣ Get student info
         # ----------------------------
-        execute_query(cur, "SELECT * FROM Student WHERE student_id = %s", (student_id,))
-        student = fetch_one(cur)
+        cur.execute("SELECT * FROM Student WHERE student_id = %s", (student_id,))
+        student = cur.fetchone()
 
         if not student:
             # In case student record was deleted
@@ -700,24 +463,21 @@ def student_dashboard():
         # ----------------------------
         # 3️⃣ Check enrollment / create if missing
         # ----------------------------
-        execute_query(cur, """
+        cur.execute("""
             SELECT days_remaining FROM Enrollment 
             WHERE student_id = %s AND status = 'active'
             ORDER BY enrollment_id DESC LIMIT 1
         """, (student_id,))
-        enroll = fetch_one(cur)
+        enroll = cur.fetchone()
 
         if not enroll:
             # Create new 20-day access if missing
-            execute_query(cur, """
+            cur.execute("""
                 INSERT INTO Enrollment (student_id, enrollment_days, days_remaining, status)
                 VALUES (%s, 20, 20, 'active')
+                RETURNING days_remaining
             """, (student_id,))
-            if DB_CONFIG['type'] == 'sqlite':
-                enroll = {'days_remaining': 20}
-            else:
-                execute_query(cur, "SELECT days_remaining FROM Enrollment WHERE student_id = %s ORDER BY enrollment_id DESC LIMIT 1", (student_id,))
-                enroll = fetch_one(cur)
+            enroll = cur.fetchone()
             conn.commit()
 
         days_remaining = enroll['days_remaining']
@@ -725,24 +485,24 @@ def student_dashboard():
         # ----------------------------
         # 4️⃣ Get active mentors with images and phone numbers
         # ----------------------------
-        execute_query(cur, """
+        cur.execute("""
             SELECT name, surname, subject_speciality, bio, profile_image, phone
             FROM Mentor
             WHERE status='active'
             ORDER BY name
         """)
-        mentors = fetch_all(cur)
+        mentors = cur.fetchall()
 
         # ----------------------------
         # 5️⃣ Get courses/subjects for this student's grade
         # ----------------------------
-        execute_query(cur, """
+        cur.execute("""
             SELECT DISTINCT subject
             FROM Content
             WHERE grade = %s
             ORDER BY subject
         """, (grade,))
-        courses = fetch_all(cur)
+        courses = cur.fetchall()
 
     finally:
         cur.close()
@@ -759,6 +519,7 @@ def student_dashboard():
         days_remaining=days_remaining
     )
 
+
 @app.route("/student/classes")
 def student_classes():
     # 1️⃣ Ensure student is logged in
@@ -770,11 +531,11 @@ def student_classes():
 
     # 2️⃣ Connect to DB
     conn = get_db_connection()
-    cur = get_cursor(conn)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
         # 3️⃣ Fetch classes for this grade
-        execute_query(cur, """
+        cur.execute("""
             SELECT C.class_id, C.title, C.topic, C.type, C.start_time,
                    C.duration, C.upload_date, C.link,
                    M.name AS mentor_name, M.surname AS mentor_surname
@@ -784,7 +545,7 @@ def student_classes():
             ORDER BY C.upload_date DESC
         """, (grade,))
 
-        classes = fetch_all(cur)
+        classes = cur.fetchall()
 
     except Exception as e:
         print(f"Error fetching classes: {e}")
@@ -807,17 +568,17 @@ def student_request():
     student_id = session['user_id']  # use consistent session key
 
     conn = get_db_connection()
-    cur = get_cursor(conn)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
         # 2️⃣ Fetch all active mentors for dropdown
-        execute_query(cur, """
+        cur.execute("""
             SELECT mentor_id, name, surname 
             FROM Mentor 
             WHERE status='active' 
             ORDER BY name
         """)
-        mentors = fetch_all(cur)
+        mentors = cur.fetchall()
 
         if request.method == 'POST':
             mentor_id = request.form.get('mentor_id')
@@ -836,7 +597,7 @@ def student_request():
                     pdf_file_url = f"uploads/{filename}"  # store relative path in DB
 
             # 4️⃣ Insert request into DB
-            execute_query(cur, """
+            cur.execute("""
                 INSERT INTO Request (student_id, mentor_id, topic, message, request_type, pdf_url)
                 VALUES (%s, %s, %s, %s, %s, %s)
             """, (student_id, mentor_id, topic, message, request_type, pdf_file_url))
@@ -864,10 +625,10 @@ def student_enrollment():
     student_id = session['user_id']
 
     conn = get_db_connection()
-    cur = get_cursor(conn)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        execute_query(cur, """
+        cur.execute("""
             SELECT e.enrollment_id, e.days_remaining, e.status, e.last_updated AS enrollment_date,
                    s.name, s.surname, s.grade
             FROM Enrollment e
@@ -876,7 +637,7 @@ def student_enrollment():
             ORDER BY e.enrollment_id DESC
             LIMIT 1
         """, (student_id,))
-        enrollment = fetch_one(cur)
+        enrollment = cur.fetchone()
 
     finally:
         cur.close()
@@ -899,6 +660,7 @@ def student_enrollment():
     }
 )
 
+
 @app.route("/student/profile", methods=['GET', 'POST'])
 def student_profile():
     # Ensure user is logged in AND is a student
@@ -908,11 +670,11 @@ def student_profile():
     student_id = session['user_id']  # ✅ Correct session key
 
     conn = get_db_connection()
-    cur = get_cursor(conn)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     # Fetch current student info
-    execute_query(cur, "SELECT * FROM Student WHERE student_id = %s", (student_id,))
-    student = fetch_one(cur)
+    cur.execute("SELECT * FROM Student WHERE student_id = %s", (student_id,))
+    student = cur.fetchone()
 
     if not student:
         session.clear()
@@ -926,7 +688,7 @@ def student_profile():
         profile_image = request.form.get('profile_image')  # ✅ TAKE AS LINK (no file upload)
 
         # Update student info
-        execute_query(cur, """
+        cur.execute("""
             UPDATE Student
             SET name = %s,
                 surname = %s,
@@ -951,6 +713,8 @@ def student_profile():
 
     return render_template("student_profile.html", student=student)
 
+
+
 @app.route("/student/dashboard/courses")
 def student_courses():
     # Make sure user is logged in as student
@@ -961,16 +725,16 @@ def student_courses():
     grade = session.get('grade')         # ✅ get grade for filtering
 
     conn = get_db_connection()
-    cur = get_cursor(conn)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     # Check remaining days
-    execute_query(cur, """
+    cur.execute("""
         SELECT days_remaining 
         FROM Enrollment
         WHERE student_id = %s AND status = 'active'
         LIMIT 1
     """, (student_id,))
-    enrollment = fetch_one(cur)
+    enrollment = cur.fetchone()
 
     # If no active enrollment or 0 days remaining -> Send to payment page
     if not enrollment or enrollment['days_remaining'] <= 0:
@@ -979,13 +743,13 @@ def student_courses():
         return redirect('/student/payment?expired=1')
 
     # ✅ Get subjects available only for this student's grade
-    execute_query(cur, """
+    cur.execute("""
         SELECT DISTINCT subject 
         FROM Content
         WHERE grade = %s
         ORDER BY subject
     """, (grade,))
-    subjects = fetch_all(cur)
+    subjects = cur.fetchall()
 
     cur.close()
     conn.close()
@@ -1004,23 +768,23 @@ def student_course_contents(subject):
     if not conn:
         return "❌ Failed to connect to database", 500
 
-    cur = get_cursor(conn)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
     try:
         # Get student's grade
-        execute_query(cur, """
+        cur.execute("""
             SELECT grade
             FROM Student
             WHERE student_id = %s AND status='active'
             LIMIT 1
         """, (student_id,))
-        grade_result = fetch_one(cur)
+        grade_result = cur.fetchone()
         if not grade_result:
             return "❌ Student not found or inactive", 404
 
         grade = grade_result['grade']
 
         # Get all content for this subject and grade
-        execute_query(cur, """
+        cur.execute("""
             SELECT C.content_id, C.title, C.description, C.type,
                    C.file_url, C.file_name, C.file_size_mb, C.upload_date,
                    M.name AS mentor_name, M.surname AS mentor_surname
@@ -1029,18 +793,18 @@ def student_course_contents(subject):
             WHERE C.subject = %s AND C.grade = %s
             ORDER BY C.upload_date DESC
         """, (subject, grade))
-        contents = fetch_all(cur)
+        contents = cur.fetchall()
 
         # Get multiple video links for each content
         content_links = {}
         for content in contents:
-            execute_query(cur, """
+            cur.execute("""
                 SELECT file_link, upload_date 
                 FROM ContentRecord 
                 WHERE content_id = %s
                 ORDER BY upload_date DESC
             """, (content['content_id'],))
-            content_links[content['content_id']] = fetch_all(cur)
+            content_links[content['content_id']] = cur.fetchall()
 
     finally:
         cur.close()
@@ -1054,6 +818,7 @@ def student_course_contents(subject):
         content_links=content_links
     )
 
+
 @app.route('/download/<filename>')
 def download_pdf(filename):
     """Serve PDF files for download"""
@@ -1064,21 +829,22 @@ def download_pdf(filename):
         flash('File not found', 'error')
         return redirect(request.referrer or url_for('student_dashboard'))
 
+
 @app.route('/view/content/<int:content_id>')
 def view_content_pdf(content_id):
     if 'student_id' not in session:
         return redirect('/login')
 
     conn = get_db_connection()
-    cur = get_cursor(conn)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
-    execute_query(cur, """
+    cur.execute("""
         SELECT pdf_file, file_name
         FROM Content
         WHERE content_id = %s
     """, (content_id,))
 
-    file_data = fetch_one(cur)
+    file_data = cur.fetchone()
 
     cur.close()
     conn.close()
@@ -1094,6 +860,7 @@ def view_content_pdf(content_id):
         download_name=file_data['file_name'],
         as_attachment=False  # change to True if you want "Download" instead of "View"
     )
+
 
 #signup is done
 # ---------------- ID Scoring Function ----------------
@@ -1211,29 +978,29 @@ def signup():
                 cur = conn.cursor()
 
                 # Check if email exists
-                execute_query(cur, "SELECT student_id FROM Student WHERE email=%s", (email,))
-                if fetch_one(cur):
+                cur.execute("SELECT student_id FROM Student WHERE email=%s", (email,))
+                if cur.fetchone():
                     cur.close()
                     conn.close()
                     return render_template('singupIdUsed.html', 
                                            error_message="Email already registered.")
 
                 # Check if student ID exists
-                execute_query(cur, "SELECT student_id FROM Student WHERE student_id=%s", (student_id,))
-                if fetch_one(cur):
+                cur.execute("SELECT student_id FROM Student WHERE student_id=%s", (student_id,))
+                if cur.fetchone():
                     cur.close()
                     conn.close()
                     return render_template('singupIdUsed.html', 
                                            error_message="Student ID already registered.")
 
                 # Insert student (password hashed)
-                execute_query(cur, """
+                cur.execute("""
                     INSERT INTO Student (student_id, name, surname, email, password, grade, phone)
                     VALUES (%s,%s,%s,%s,%s,%s,%s)
                 """, (student_id, name, surname, email, password, grade, phone))
 
                 # ✅ Create enrollment with new structure
-                execute_query(cur, """
+                cur.execute("""
                     INSERT INTO Enrollment (student_id, enrollment_days, days_remaining, status)
                     VALUES (%s, 20, 20, 'active')
                 """, (student_id,))
@@ -1267,6 +1034,7 @@ def signup():
     # GET request
     return render_template('signup.html')
 
+
 def luhn_check(id_num):
     """
     Luhn-style check used for South African ID numbers.
@@ -1291,6 +1059,9 @@ def luhn_check(id_num):
 
     return computed_check == digits[12]
 
+
+
+
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
@@ -1308,16 +1079,21 @@ def dashboard():
         conn = get_db_connection()
         if conn:
             try:
-                cur = get_cursor(conn)
+                cur = conn.cursor(cursor_factory=RealDictCursor)
                 
                 # Get enrolled courses count
-                execute_query(cur, "SELECT COUNT(*) as course_count FROM Enrollment WHERE student_id = %s", (session['user_id'],))
-                result = fetch_one(cur)
-                course_count = result['course_count'] if result else 0
+                cur.execute(
+                    "SELECT COUNT(*) as course_count FROM Enrollment WHERE student_id = %s",
+                    (session['user_id'],)
+                )
+                course_count = cur.fetchone()['course_count']
                 
                 # Get notifications
-                execute_query(cur, "SELECT * FROM Notification WHERE student_id = %s ORDER BY date_sent DESC LIMIT 5", (session['user_id'],))
-                notifications = fetch_all(cur)
+                cur.execute(
+                    "SELECT * FROM Notification WHERE student_id = %s ORDER BY date_sent DESC LIMIT 5",
+                    (session['user_id'],)
+                )
+                notifications = cur.fetchall()
                 
                 user_data['course_count'] = course_count
                 user_data['notifications'] = notifications
@@ -1349,16 +1125,16 @@ def get_courses():
     
     if conn:
         try:
-            cur = get_cursor(conn)
+            cur = conn.cursor(cursor_factory=RealDictCursor)
             
             # Get content for student's grade
-            execute_query(cur, """
+            cur.execute("""
                 SELECT * FROM Content 
                 WHERE grade = %s OR grade = 'All'
                 ORDER BY upload_date DESC
             """, (grade,))
             
-            content_items = fetch_all(cur)
+            content_items = cur.fetchall()
             
             courses = []
             for item in content_items:
@@ -1408,14 +1184,14 @@ def get_notifications():
     conn = get_db_connection()
     if conn:
         try:
-            cur = get_cursor(conn)
-            execute_query(cur, """
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            cur.execute("""
                 SELECT * FROM Notification 
                 WHERE student_id = %s 
                 ORDER BY date_sent DESC
             """, (session['user_id'],))
             
-            notifications = fetch_all(cur)
+            notifications = cur.fetchall()
             cur.close()
             conn.close()
             
@@ -1428,6 +1204,7 @@ def get_notifications():
     
     return jsonify([])
 
+
 # ---------------- ADMIN LOGIN -------------------
 @app.route('/admin-login', methods=['GET', 'POST'])
 def admin_login():
@@ -1439,18 +1216,11 @@ def admin_login():
         cur = conn.cursor()
 
         # Match your table structure
-        execute_query(cur, """
+        cur.execute("""
             SELECT admin_id, name, surname, email, password, role 
             FROM Admin WHERE email = %s
         """, (email,))
-        if DB_CONFIG['type'] == 'sqlite':
-            admin_result = cur.fetchone()
-            if admin_result:
-                admin = dict(zip([col[0] for col in cur.description], admin_result))
-            else:
-                admin = None
-        else:
-            admin = cur.fetchone()
+        admin = cur.fetchone()
 
         cur.close()
         conn.close()
@@ -1482,6 +1252,7 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
+
 # --------------- ADMIN DASHBOARD ---------------
 @app.route('/admin/dashboard')
 @admin_required
@@ -1493,19 +1264,16 @@ def admin_dashboard():
             cur = conn.cursor()
             
             # Count students
-            execute_query(cur, "SELECT COUNT(*) FROM Student")
-            result = cur.fetchone()
-            stats['students'] = result[0] if result else 0
+            cur.execute("SELECT COUNT(*) FROM Student")
+            stats['students'] = cur.fetchone()[0]
             
             # Count mentors (if you have a Mentor table)
-            execute_query(cur, "SELECT COUNT(*) FROM Mentor")
-            result = cur.fetchone()
-            stats['mentors'] = result[0] if result else 0
+            cur.execute("SELECT COUNT(*) FROM Mentor")
+            stats['mentors'] = cur.fetchone()[0]
             
             # Count enrollments
-            execute_query(cur, "SELECT COUNT(*) FROM Enrollment")
-            result = cur.fetchone()
-            stats['enrollments'] = result[0] if result else 0
+            cur.execute("SELECT COUNT(*) FROM Enrollment")
+            stats['enrollments'] = cur.fetchone()[0]
             
             cur.close()
         except Exception as e:
@@ -1527,6 +1295,7 @@ def admin_logout():
     flash("Logged out successfully.", "info")
     return redirect('/admin-login')
 
+
 # Example skeleton route for notifications
 @app.route('/admin/notifications', methods=['GET', 'POST'])
 @admin_required
@@ -1537,7 +1306,7 @@ def admin_notifications():
         # Save to DB and/or queue for sending
         conn = get_db_connection()
         cur = conn.cursor()
-        execute_query(cur, "INSERT INTO Notifications (title, message, created_at) VALUES (%s, %s, CURRENT_TIMESTAMP)", (title, message))
+        cur.execute("INSERT INTO Notifications (title, message, created_at) VALUES (%s, %s, CURRENT_TIMESTAMP)", (title, message))
         conn.commit()
         cur.close()
         conn.close()
@@ -1547,13 +1316,16 @@ def admin_notifications():
     # GET
     return render_template('admin_notifications.html')
 
+
 # Allowed image extensions
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 UPLOAD_FOLDER = 'static/uploads/mentors'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 # --- Add employee (mentor/staff) form + POST handler ---
 @app.route('/admin/mentors/add', methods=['GET', 'POST'])
@@ -1572,7 +1344,7 @@ def admin_add_mentor():
         conn = get_db_connection()
         cur = conn.cursor()
         try:
-            execute_query(cur, """
+            cur.execute("""
                 INSERT INTO Mentor (name, surname, email, phone, subject_speciality, password, bio, profile_image, join_date, status)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, CURRENT_DATE, 'active')
             """, (name, surname, email, phone, subject_speciality, password, bio, profile_image))
@@ -1595,23 +1367,26 @@ def admin_add_mentor():
 @admin_required
 def admin_view_mentors():
     conn = get_db_connection()
-    cur = get_cursor(conn)
-    execute_query(cur, "SELECT mentor_id, name, surname, email, subject_speciality, status, join_date FROM Mentor ORDER BY join_date DESC")
-    mentors = fetch_all(cur)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT mentor_id, name, surname, email, subject_speciality, status, join_date FROM Mentor ORDER BY join_date DESC")
+    mentors = cur.fetchall()
     cur.close()
     conn.close()
     return render_template('admin_view_mentors.html', mentors=mentors)
 
-# --- Edit mentor ---
+
+    # --- Edit mentor ---
+
+
 @app.route('/admin/mentors/edit/<int:mentor_id>', methods=['GET', 'POST'])
 @admin_required
 def admin_edit_mentor(mentor_id):
     conn = get_db_connection()
-    cur = get_cursor(conn)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     # Get current mentor
-    execute_query(cur, "SELECT * FROM Mentor WHERE mentor_id = %s", (mentor_id,))
-    mentor = fetch_one(cur)
+    cur.execute("SELECT * FROM Mentor WHERE mentor_id = %s", (mentor_id,))
+    mentor = cur.fetchone()
     if not mentor:
         flash("Mentor not found.", "danger")
         return redirect('/admin/mentors')
@@ -1631,15 +1406,15 @@ def admin_edit_mentor(mentor_id):
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            upload_path = os.path.join(UPLOAD_FOLDER, filename)
-            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+            upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
             file.save(upload_path)
 
             # Only store filename in DB, not full path
             image_path = filename
 
         # Update mentor details
-        execute_query(cur, """
+        cur.execute("""
             UPDATE Mentor
             SET name=%s, surname=%s, email=%s, phone=%s, 
                 subject_speciality=%s, bio=%s, status=%s, profile_image=%s
@@ -1663,12 +1438,13 @@ def admin_edit_mentor(mentor_id):
 def admin_delete_mentor(mentor_id):
     conn = get_db_connection()
     cur = conn.cursor()
-    execute_query(cur, "DELETE FROM Mentor WHERE mentor_id=%s", (mentor_id,))
+    cur.execute("DELETE FROM Mentor WHERE mentor_id=%s", (mentor_id,))
     conn.commit()
     cur.close()
     conn.close()
     flash("Mentor deleted successfully.", "success")
     return redirect('/admin/mentors')
+
 
 @app.route('/admin/enrollments/add-days', methods=['POST'])
 @admin_required
@@ -1694,7 +1470,7 @@ def add_enrollment_days():
         try:
             cur = conn.cursor()
             # Update enrollment days and remaining days
-            execute_query(cur, """
+            cur.execute("""
                 UPDATE Enrollment
                 SET enrollment_days = enrollment_days + %s,
                     days_remaining = days_remaining + %s,
@@ -1712,35 +1488,48 @@ def add_enrollment_days():
 
     return redirect('/admin/enrollments')
 
+
 # --- View student enrollments (example) ---
 @app.route('/admin/enrollments')
 @admin_required
 def admin_view_enrollments():
     conn = get_db_connection()
-    cur = get_cursor(conn)
-    execute_query(cur, """
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("""
         SELECT e.enrollment_id, e.student_id, s.name, s.surname, e.enrollment_days, e.days_remaining, e.status, e.enrollment_date, e.last_updated
         FROM Enrollment e
-        LEFT JOIN Student s ON e.student_id = s.student_id
+        LEFT JOIN Student s ON s.student_id = e.student_id
         ORDER BY e.last_updated DESC
     """)
-    enrollments = fetch_all(cur)
+    enrollments = cur.fetchall()
     cur.close()
     conn.close()
     return render_template('admin_view_enrollments.html', enrollments=enrollments)
+
 
 @app.route('/admin/students')
 @admin_required
 def admin_view_students():
     conn = get_db_connection()
-    cur = get_cursor(conn)
-    execute_query(cur, "SELECT student_id, name, surname, email, grade, status FROM Student ORDER BY name")
-    students = fetch_all(cur)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT student_id, name, surname, email, grade, status FROM Student ORDER BY name")
+    students = cur.fetchall()
     cur.close()
     conn.close()
     return render_template('admin_view_students.html', students=students)
 
-# MENTOR THINGS
+
+
+# --- Additional endpoints you can expand later ---
+# - /admin/content  (Content oversight)
+# - /admin/classes  (Class management)
+# - /admin/requests (Student requests)
+# - /admin/notifications (Create/send notifications)
+# - /admin/system (Platform settings & audit)
+# --- end of sample admin routes ---
+
+  # MENTOR THINGS
+
 def mentor_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -1752,6 +1541,10 @@ def mentor_required(f):
     return decorated
 
 # MENTOR / EMPLOYEE DASHBOARD
+# ----------------------------
+# Mentor / Employee Dashboard
+# ----------------------------
+
 @app.route('/employee/dashboard')
 def employee_dashboard():
     # ✅ Ensure user is logged in as mentor
@@ -1765,15 +1558,15 @@ def employee_dashboard():
     if not conn:
         return "❌ Failed to connect to database", 500
 
-    cur = get_cursor(conn)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
     try:
         # Fetch mentor details
-        execute_query(cur, """
+        cur.execute("""
             SELECT name, surname, subject_speciality, bio, profile_image, phone
             FROM Mentor
             WHERE mentor_id = %s AND status='active'
         """, (mentor_id,))
-        mentor = fetch_one(cur)
+        mentor = cur.fetchone()
 
         if not mentor:
             return "❌ Mentor not found or inactive", 404
@@ -1784,6 +1577,7 @@ def employee_dashboard():
     # Render template with mentor dictionary
     return render_template('employee_dashboard.html', mentor=mentor)
 
+
 @app.route('/mentor-login', methods=['GET', 'POST'])
 def mentor_login():
     if request.method == 'POST':
@@ -1793,19 +1587,12 @@ def mentor_login():
         conn = get_db_connection()
         cur = conn.cursor()
 
-        execute_query(cur, """
+        cur.execute("""
             SELECT mentor_id, name, surname, email, password, status
             FROM Mentor
             WHERE email = %s AND status = 'active'
         """, (email,))
-        if DB_CONFIG['type'] == 'sqlite':
-            mentor_result = cur.fetchone()
-            if mentor_result:
-                mentor = dict(zip([col[0] for col in cur.description], mentor_result))
-            else:
-                mentor = None
-        else:
-            mentor = cur.fetchone()
+        mentor = cur.fetchone()
 
         cur.close()
         conn.close()
@@ -1825,6 +1612,7 @@ def mentor_login():
         return render_template('employee_login.html', error_message="Invalid email or password")
 
     return render_template('employee_login.html')
+
 
 @app.route('/employee/content/upload/pdf', methods=['GET', 'POST'])
 @mentor_required
@@ -1856,21 +1644,10 @@ def upload_pdf():
         conn = get_db_connection()
         cur = conn.cursor()
 
-        # For SQLite, we need to handle file storage differently
-        if DB_CONFIG['type'] == 'sqlite':
-            # Store file path instead of binary data for SQLite
-            pdf_path = os.path.join(UPLOAD_FOLDER, file_name)
-            file.save(pdf_path)
-            execute_query(cur, """
-                INSERT INTO Content (mentor_id, title, description, subject, grade, file_url, file_name, file_size_mb)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """, (session["mentor_id"], title, description, subject, grade, pdf_path, file_name, file_size_mb))
-        else:
-            # PostgreSQL can handle binary data
-            execute_query(cur, """
-                INSERT INTO Content (mentor_id, title, description, subject, grade, pdf_file, file_name, file_size_mb)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """, (session["mentor_id"], title, description, subject, grade, pdf_data, file_name, file_size_mb))
+        cur.execute("""
+    INSERT INTO Content (mentor_id, title, description, subject, grade, pdf_file, file_name, file_size_mb)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING content_id
+""", (session["mentor_id"], title, description, subject, grade, pdf_path, file_name, file_size_mb))
 
         conn.commit()
         cur.close()
@@ -1880,6 +1657,7 @@ def upload_pdf():
         return redirect('/employee/dashboard')
 
     return render_template('upload_pdf.html', grade=grade)
+
 
 @app.route("/employee/content/upload", methods=["GET", "POST"])
 def employee_content_upload():
@@ -1914,22 +1692,19 @@ def employee_content_upload():
 
         try:
             # Insert main content record (PDF stored as link)
-            execute_query(cur, """
+            cur.execute("""
                 INSERT INTO Content (mentor_id, title, description, subject, grade, file_url)
                 VALUES (%s, %s, %s, %s, %s, %s)
+                RETURNING content_id
             """, (mentor_id, title, description, subject, grade, file_url))
-            
-            if DB_CONFIG['type'] == 'sqlite':
-                content_id = cur.lastrowid
-            else:
-                content_id = cur.fetchone()[0]
-                
+
+            content_id = cur.fetchone()[0]
             conn.commit()
 
             # Insert video links if provided
             for link in video_links:
                 if link.strip() != "":
-                    execute_query(cur, """
+                    cur.execute("""
                         INSERT INTO ContentRecord (content_id, file_link)
                         VALUES (%s, %s)
                     """, (content_id, link))
@@ -1949,6 +1724,7 @@ def employee_content_upload():
 
     return render_template("upload_content.html", grade=grade)
 
+
 @app.route("/employee/manage-contents")
 def employee_manage_contents():
     # Ensure logged in as mentor
@@ -1959,26 +1735,64 @@ def employee_manage_contents():
     mentor_id = session['user_id']  # Unified session key
 
     conn = get_db_connection()
-    cur = get_cursor(conn)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     # Get all content uploaded by this mentor
-    execute_query(cur, """
+    cur.execute("""
         SELECT C.content_id, C.title, C.subject, C.grade, C.file_url, C.upload_date
         FROM Content C
         WHERE C.mentor_id = %s
         ORDER BY C.upload_date DESC
     """, (mentor_id,))
-    contents = fetch_all(cur)
+    contents = cur.fetchall()
 
     # Get multiple resource/video links for each content
     content_links = {}
     for c in contents:
-        execute_query(cur, """
+        cur.execute("""
             SELECT file_link 
             FROM ContentRecord 
             WHERE content_id = %s
         """, (c['content_id'],))
-        content_links[c['content_id']] = [row['file_link'] for row in fetch_all(cur)]
+        content_links[c['content_id']] = [row['file_link'] for row in cur.fetchall()]
+
+    cur.close()
+    conn.close()
+
+    return render_template(
+        "manage_contents.html",
+        contents=contents,
+        content_links=content_links
+    )
+
+    # Ensure logged in as mentor
+    if 'user_role' not in session or session['user_role'] != 'mentor':
+        flash("Please login as a mentor first.", "warning")
+        return redirect("/login")
+
+    mentor_id = session['user_id']  # Unified session key
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    # Get all content uploaded by this mentor
+    cur.execute("""
+        SELECT C.content_id, C.title, C.subject, C.grade, C.file_url, C.upload_date
+        FROM Content C
+        WHERE C.mentor_id = %s
+        ORDER BY C.upload_date DESC
+    """, (mentor_id,))
+    contents = cur.fetchall()
+
+    # Get multiple video links per content
+    content_links = {}
+    for c in contents:
+        cur.execute("""
+            SELECT file_link 
+            FROM ContentRecord 
+            WHERE content_id = %s
+        """, (c['content_id'],))
+        content_links[c['content_id']] = cur.fetchall()
 
     cur.close()
     conn.close()
@@ -1999,9 +1813,9 @@ def delete_content(content_id):
     cur = conn.cursor()
 
     # Delete associated extra links first
-    execute_query(cur, "DELETE FROM ContentRecord WHERE content_id = %s", (content_id,))
+    cur.execute("DELETE FROM ContentRecord WHERE content_id = %s", (content_id,))
     # Delete main content
-    execute_query(cur, "DELETE FROM Content WHERE content_id = %s", (content_id,))
+    cur.execute("DELETE FROM Content WHERE content_id = %s", (content_id,))
     
     conn.commit()
     cur.close()
@@ -2009,6 +1823,7 @@ def delete_content(content_id):
 
     flash("Content deleted successfully.", "success")
     return redirect("/employee/manage-contents")
+
 
 @app.route("/employee/requests")
 def employee_requests():
@@ -2018,17 +1833,17 @@ def employee_requests():
         return redirect("/login")  # unified login page
 
     conn = get_db_connection()
-    cur = get_cursor(conn)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        execute_query(cur, """
+        cur.execute("""
             SELECT R.request_id, R.topic, R.message, R.request_type, R.status, R.created_at, R.pdf_url,
                    S.name AS student_name, S.surname AS student_surname, S.phone AS student_phone, S.email AS student_email
             FROM Request R
             LEFT JOIN Student S ON R.student_id = S.student_id
             ORDER BY R.created_at DESC
         """)
-        requests = fetch_all(cur)
+        requests = cur.fetchall()
     except Exception as e:
         print(f"Error fetching requests: {e}")
         flash("Failed to load requests.", "danger")
@@ -2039,6 +1854,7 @@ def employee_requests():
 
     return render_template("employee_requests.html", requests=requests)
 
+
 @app.route("/employee/profile/edit", methods=["GET", "POST"])
 def employee_profile_edit():
     if 'mentor_id' not in session:
@@ -2047,7 +1863,7 @@ def employee_profile_edit():
     mentor_id = session['mentor_id']
 
     conn = get_db_connection()
-    cur = get_cursor(conn)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     if request.method == "POST":
         name = request.form.get("name")
@@ -2056,7 +1872,7 @@ def employee_profile_edit():
         subject_speciality = request.form.get("subject_speciality")
         bio = request.form.get("bio")
 
-        execute_query(cur, """
+        cur.execute("""
             UPDATE Mentor
             SET name = %s, surname = %s, phone = %s, subject_speciality = %s, bio = %s
             WHERE mentor_id = %s
@@ -2068,8 +1884,8 @@ def employee_profile_edit():
         return redirect("/employee/dashboard")
 
     # Load existing data
-    execute_query(cur, "SELECT * FROM Mentor WHERE mentor_id = %s", (mentor_id,))
-    mentor = fetch_one(cur)
+    cur.execute("SELECT * FROM Mentor WHERE mentor_id = %s", (mentor_id,))
+    mentor = cur.fetchone()
 
     cur.close()
     conn.close()
@@ -2096,22 +1912,16 @@ def employee_change_password():
         cur = conn.cursor()
 
         # Fetch current password from DB
-        execute_query(cur, "SELECT password FROM Mentor WHERE mentor_id = %s", (mentor_id,))
-        if DB_CONFIG['type'] == 'sqlite':
-            result = cur.fetchone()
-            if result:
-                db_password = result[0]
-            else:
-                db_password = None
-        else:
-            result = cur.fetchone()
-            db_password = result[0] if result else None
+        cur.execute("SELECT password FROM Mentor WHERE mentor_id = %s", (mentor_id,))
+        result = cur.fetchone()
 
         if not result:
             cur.close()
             conn.close()
             error = "Mentor not found."
             return render_template("employee_change_password.html", error=error)
+
+        db_password = result[0]
 
         # Direct comparison
         if db_password != current_password:
@@ -2121,7 +1931,7 @@ def employee_change_password():
             return render_template("employee_change_password.html", error=error)
 
         # Update password
-        execute_query(cur, "UPDATE Mentor SET password = %s WHERE mentor_id = %s", (new_password, mentor_id))
+        cur.execute("UPDATE Mentor SET password = %s WHERE mentor_id = %s", (new_password, mentor_id))
         conn.commit()
         cur.close()
         conn.close()
@@ -2130,6 +1940,7 @@ def employee_change_password():
         return redirect("/employee/dashboard")
 
     return render_template("employee_change_password.html", error=error)
+
 
 @app.route("/employee/content/uploaded")
 def upload_success():
@@ -2163,7 +1974,7 @@ def create_new_class():
         cur = conn.cursor()
 
         try:
-            execute_query(cur, """
+            cur.execute("""
                 INSERT INTO Class (mentor_id, title, topic, type, start_time, duration, grade, link)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """, (mentor_id, title, topic, class_type, start_time, duration, grade, link))
@@ -2181,6 +1992,7 @@ def create_new_class():
 
     return render_template("employee_class_new.html")
 
+
 @app.route("/employee/classes")
 def view_classes():
     # ----------------------------
@@ -2193,17 +2005,17 @@ def view_classes():
     mentor_id = session['user_id']  # ✅ use unified session key
 
     conn = get_db_connection()
-    cur = get_cursor(conn)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        execute_query(cur, """
+        cur.execute("""
             SELECT class_id, title, topic, type, start_time, duration, grade, link, upload_date
             FROM Class
             WHERE mentor_id = %s
             ORDER BY start_time DESC
         """, (mentor_id,))
 
-        classes = fetch_all(cur)
+        classes = cur.fetchall()
 
     except Exception as e:
         flash(f"Failed to fetch classes: {e}", "danger")
@@ -2216,6 +2028,7 @@ def view_classes():
 
     return render_template("employee_classes.html", classes=classes)
 
+
 @app.route('/logout')
 def logout():
     session.clear()
@@ -2225,20 +2038,7 @@ if __name__ == '__main__':
     print("🚀 Edu Boost Up Server Starting...")
     print("📧 Test Login: Use your registered email or register new account")
     
-    # Display database configuration
-    if DB_CONFIG['type'] == 'sqlite':
-        print(f"💾 Using SQLite database: {DB_CONFIG['database']}")
-    elif DB_CONFIG['is_hosted']:
-        print("🌐 Using hosted PostgreSQL database")
-    else:
-        print("💻 Using local PostgreSQL database")
-    
     # Initialize database on startup
     init_db()
     
-    # Get port from environment variable or use default
-    port = int(os.environ.get('PORT', 5000))
-    
-    app.run(debug=True, host='0.0.0.0', port=port)
-
-    
+    app.run(debug=True, host='0.0.0.0', port=5000)
