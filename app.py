@@ -19,6 +19,7 @@ from psycopg2.extras import RealDictCursor
 from datetime import datetime
 from functools import wraps
 from flask import session, redirect
+from urllib.parse import urlparse
 
 
 app = Flask(__name__)
@@ -29,7 +30,7 @@ DB_CONFIG = {
     'host': 'localhost',
     'database': 'eduboostup',  # Change to your actual database name
     'user': 'postgres',
-    'password': 'Admin123',
+    'password': 'Admin2023',
     'port': '5432'
 }
 
@@ -38,20 +39,32 @@ scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
 
+
 def get_db_connection():
-    """Create and return a database connection"""
+    """Connect to Railway PostgreSQL using DATABASE_URL"""
     try:
+        DATABASE_URL = os.getenv("DATABASE_URL")
+
+        if not DATABASE_URL:
+            raise Exception("❌ DATABASE_URL not found in environment variables.")
+
+        result = urlparse(DATABASE_URL)
+
         conn = psycopg2.connect(
-            host=DB_CONFIG['host'],
-            database=DB_CONFIG['database'],
-            user=DB_CONFIG['user'],
-            password=DB_CONFIG['password'],
-            port=DB_CONFIG['port']
+            database=result.path[1:],  # remove '/' at start
+            user=result.username,
+            password=result.password,
+            host=result.hostname,
+            port=result.port
         )
+
+        print("✅ Connected to Railway PostgreSQL")
         return conn
+
     except Exception as e:
-        print(f"Database connection error: {e}")
+        print(f"❌ Database connection error: {e}")
         return None
+
 
 # Initialize database tables (run once)
 def init_db():
