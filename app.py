@@ -30,7 +30,7 @@ DB_CONFIG = {
     'host': 'localhost',
     'database': 'eduboostup',  # Change to your actual database name
     'user': 'postgres',
-    'password': 'Admin2023',
+    'password': 'Baloyi',
     'port': '5432'
 }
 
@@ -487,7 +487,7 @@ def student_dashboard():
             # Create new 20-day access if missing
             cur.execute("""
                 INSERT INTO Enrollment (student_id, enrollment_days, days_remaining, status)
-                VALUES (%s, 20, 20, 'active')
+                VALUES (%s, 0, 0, 'active')
                 RETURNING days_remaining
             """, (student_id,))
             enroll = cur.fetchone()
@@ -1015,7 +1015,7 @@ def signup():
                 # ✅ Create enrollment with new structure
                 cur.execute("""
                     INSERT INTO Enrollment (student_id, enrollment_days, days_remaining, status)
-                    VALUES (%s, 20, 20, 'active')
+                    VALUES (%s, 0, 0, 'active')
                 """, (student_id,))
 
                 conn.commit()
