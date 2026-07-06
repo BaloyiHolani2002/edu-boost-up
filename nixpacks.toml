@@ -1,8 +1,0 @@
-[phases.setup]
-cmds = [
-    "apt-get update",
-    "apt-get install -y libpq-dev"
-]
-
-[start]
-cmd = "gunicorn app:app --bind 0.0.0.0:$PORT"
