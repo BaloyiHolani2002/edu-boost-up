@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance Register - Edu Boost Up</title>
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon-32x32.png') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/favicon-180x180.png') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    :root {
+      --primary: #4361ee;
+      --primary-dark: #2a4bd4;
+      --secondary: #3a0ca3;
+      --accent: #7209b7;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --text-light: #6c757d;
+      --shadow: 0 10px 30px rgba(0,0,0,0.08);
+      --shadow-hover: 0 20px 40px rgba(0,0,0,0.15);
+      --transition: all 0.3s cubic-bezier(0.25,0.8,0.25,1);
+      --border-radius: 12px;
+      --border-radius-lg: 20px;
+      --success: #28a745;
+      --danger: #dc3545;
+      --warning: #f77f00;
+    }
+    body {
+      background: #f5f7fb;
+      color: var(--dark);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow);
+      padding: 2.5rem;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .logo img {
+      height: 50px;
+      width: auto;
+      border-radius: 8px;
+    }
+    .logo h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .back-link {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .page-title {
+      margin-bottom: 2rem;
+    }
+    .page-title h2 {
+      color: var(--secondary);
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+    .page-title p {
+      color: var(--text-light);
+      font-size: 1rem;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      color: var(--secondary);
+      margin-bottom: 0.3rem;
+    }
+    .form-control {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 2px solid #e2e8f0;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      background: #f8fafc;
+      transition: var(--transition);
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(67,97,238,0.1);
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .btn {
+      padding: 0.7rem 2rem;
+      border-radius: 50px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1rem;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      box-shadow: 0 4px 15px rgba(67,97,238,0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(67,97,238,0.4);
+    }
+    .flash-messages {
+      margin-bottom: 1.5rem;
+    }
+    .alert {
+      padding: 0.8rem 1.2rem;
+      border-radius: var(--border-radius);
+      font-weight: 500;
+    }
+    .alert-success { background: #d4edda; color: #155724; border-left: 4px solid var(--success); }
+    .alert-danger { background: #f8d7da; color: #721c24; border-left: 4px solid var(--danger); }
+    .alert-warning { background: #fff3cd; color: #856404; border-left: 4px solid var(--warning); }
+    @media (max-width: 600px) {
+      .container { padding: 1.5rem; }
+      .header { flex-direction: column; align-items: flex-start; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">
+        <img src="/static/images/edo_logo.png.jpeg" alt="Edu Boost Up">
+        <h1>Edu Boost Up</h1>
+      </div>
+      <a href="/admin/dashboard" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+
+    <!-- Flash Messages -->
+    <div class="flash-messages">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <!-- Page Content -->
+    <div class="page-title">
+      <h2><i class="fas fa-clipboard-list"></i> Attendance Register</h2>
+      <p>Select a subject and number of signature columns to generate a PDF register.</p>
+    </div>
+
+    <form method="POST" action="/admin/attendance-register">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="subject_id">Select Subject</label>
+          <select name="subject_id" id="subject_id" class="form-control" required>
+            <option value="">-- Choose a subject --</option>
+            {% for subject in subjects %}
+              <option value="{{ subject.subject_id }}">{{ subject.subject_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="signature_count">Number of Signature Columns</label>
+          <select name="signature_count" id="signature_count" class="form-control" required>
+            <option value="10">10</option>
+            <option value="12" selected>12</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-file-pdf"></i> Download PDF
+      </button>
+    </form>
+  </div>
+</body>
+</html>

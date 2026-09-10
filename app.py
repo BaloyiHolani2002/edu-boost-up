@@ -6,16 +6,22 @@ import os
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
 from functools import wraps
+import io
 
 # Third-party
 from flask import Flask, render_template, request, redirect, session, flash, jsonify, url_for, send_file
 from werkzeug.utils import secure_filename
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from flask_apscheduler import APScheduler
-from werkzeug.security import check_password_hash
-from werkzeug.utils import secure_filename
+
+# ReportLab for PDF generation (Attendance Register)
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import landscape, A4
+from reportlab.lib.units import mm
+from reportlab.lib import colors
+from reportlab.platypus import Table, TableStyle
 
 
 # ===========================================================
@@ -115,9 +121,11 @@ def subjects():
         conn.close()
     return render_template('subjects.html', subjects=subjects)
 
+
 @app.route('/pricing')
 def pricing():
     return render_template('pricing.html')
+
 
 @app.route('/timetable')
 def timetable():
@@ -142,6 +150,7 @@ def check_db():
     conn.close()
 
     return f"✅ Database connected successfully! TIME = {result[0]}"
+
 
 @app.route('/check-email', methods=['POST'])
 def check_email():
@@ -175,7 +184,6 @@ def check_student_id():
     cur.close()
     conn.close()
     return jsonify({'exists': exists})
-
 
 
 # ===========================================================
@@ -373,7 +381,7 @@ def signup():
         cur.execute("""
             INSERT INTO Student (student_id, name, surname, email, password, grade, phone)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (student_id, name, surname, email, password, grade, phone))
+        """, (student_id, name, surname, email, hashed_password, grade, phone))
 
         # Insert enrollment
         cur.execute("""
@@ -411,6 +419,7 @@ def signup():
             conn.rollback()
             conn.close()
         return render_template("singuperror.html", error_message=f"Registration failed: {e}")
+
 
 # ✅ Schedule job to run daily at midnight (00:00)
 @scheduler.task('cron', id='reduce_days_job', hour=0, minute=0)
@@ -796,6 +805,7 @@ def student_profile():
 
     return render_template("student_profile.html", student=student)
 
+
 @app.route("/student/enroll-subject", methods=['POST'])
 def student_enroll_subject():
     if 'user_role' not in session or session['user_role'] != 'student':
@@ -839,6 +849,7 @@ def student_enroll_subject():
         conn.close()
 
     return redirect('/student/dashboard')
+
 
 @app.route("/student/classes")
 def student_classes():
@@ -1041,6 +1052,7 @@ def student_courses():
         days_remaining=days_remaining
     )
 
+
 @app.route("/student/request", methods=['GET', 'POST'])
 def student_request():
     # 1️⃣ Ensure student is logged in
@@ -1131,6 +1143,7 @@ def student_request():
                          student=student,
                          days_remaining=days_remaining,
                          success=success)
+
 
 @app.route("/student/enrollment")
 def student_enrollment():
@@ -1305,6 +1318,7 @@ def mentor_required(f):
             return redirect('/login')  # unified login page
         return f(*args, **kwargs)
     return decorated
+
 
 @app.route('/employee/dashboard')
 def employee_dashboard():
@@ -1754,6 +1768,7 @@ def employee_profile_edit():
     conn.close()
     return render_template("employee_profile_edit.html", mentor=mentor)
 
+
 @app.route("/employee/profile/password", methods=["GET", "POST"])
 def employee_change_password():
     # Ensure user is logged in as mentor
@@ -1808,9 +1823,11 @@ def employee_change_password():
 
     return render_template("employee_change_password.html", error=error)
 
+
 @app.route("/employee/content/uploaded")
 def upload_success():
     return render_template("employee_content_uploaded.html")
+
 
 @app.route("/employee/class/new", methods=["GET", "POST"])
 def create_new_class():
@@ -1904,6 +1921,7 @@ def view_classes():
 
     return render_template("employee_classes.html", classes=classes)
 
+
 @app.route("/mentor/classes/delete/<int:class_id>", methods=["POST", "GET"])
 def mentor_delete_class(class_id):
 
@@ -1989,6 +2007,7 @@ def admin_login():
         return render_template('admin_login.html', error_message="Invalid email or password")
 
     return render_template('admin_login.html')
+
 
 # --------------- ADMIN PROTECTOR ---------------
 def admin_required(f):
@@ -2082,7 +2101,6 @@ def admin_logout():
     return redirect('/admin-login')
 
 
-
 # ----------------- add subject ----------------------
 
 @app.route('/admin/subjects')
@@ -2139,6 +2157,7 @@ def admin_add_subject():
 
     return redirect('/admin/subjects')
 
+
 @app.route('/admin/subjects/edit', methods=['POST'])
 @admin_required
 def admin_edit_subject():
@@ -2169,6 +2188,7 @@ def admin_edit_subject():
         cur.close()
         conn.close()
     return redirect('/admin/subjects')
+
 
 @app.route('/admin/subjects/delete', methods=['POST'])
 @admin_required
@@ -2266,6 +2286,7 @@ def admin_add_mentor():
         return redirect('/admin/mentors')
 
     return render_template('admin_add_mentor.html')
+
 
 # --- View all employees / mentors (example) ---
 @app.route('/admin/mentors')
@@ -2389,6 +2410,7 @@ def admin_edit_mentor(mentor_id):
     conn.close()
     return render_template('admin_edit_mentor.html', mentor=mentor)
 
+
 # --- Delete mentor ---
 @app.route('/admin/mentors/delete/<int:mentor_id>', methods=['GET'])
 @admin_required
@@ -2449,6 +2471,7 @@ def admin_view_enrollments():
     cur.close()
     conn.close()
     return render_template('admin_view_enrollments.html', enrollments=enrollments)
+
 
 @app.route('/admin/students')
 @admin_required
@@ -2618,6 +2641,7 @@ def admin_expiring_accounts():
     conn.close()
 
     return render_template('admin_expiring_accounts.html', students=students)
+
 
 # ===========================================================
 # NEW ADMIN ROUTES FOR MISSING PAGES
@@ -2965,6 +2989,7 @@ def add_enrollment_days():
         cur.close()
         conn.close()
 
+
 # ===========================================================
 # ADMIN - VIEW EXPIRED ACCOUNTS (enrollment_days > 0, days_remaining = 0)
 # ===========================================================
@@ -3074,6 +3099,123 @@ def reset_enrollment():
         cur.close()
         conn.close()
 
+
+# ===========================================================
+# ADMIN - ATTENDANCE REGISTER
+# ===========================================================
+@app.route('/admin/attendance-register', methods=['GET', 'POST'])
+@admin_required
+def admin_attendance_register():
+    conn = get_db_connection()
+    if not conn:
+        flash('Database connection failed.', 'danger')
+        return redirect('/admin/dashboard')
+
+    subjects = []
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    if request.method == 'GET':
+        cur.execute("SELECT subject_id, subject_name FROM Subject WHERE status = 'active' ORDER BY subject_name")
+        subjects = cur.fetchall()
+        cur.close()
+        conn.close()
+        return render_template('admin_attendance_register.html', subjects=subjects)
+
+    # POST – generate PDF
+    subject_id = request.form.get('subject_id')
+    if not subject_id:
+        flash('Please select a subject.', 'warning')
+        return redirect('/admin/attendance-register')
+
+    # Get subject name
+    cur.execute("SELECT subject_name FROM Subject WHERE subject_id = %s", (subject_id,))
+    subject = cur.fetchone()
+    subject_name = subject['subject_name'] if subject else subject_id
+
+    # Get students enrolled in this subject with active enrollment (days_remaining > 0)
+    try:
+        cur.execute("""
+            SELECT 
+                s.name,
+                s.surname,
+                s.email,
+                s.phone,
+                e.days_remaining
+            FROM Student s
+            JOIN StudentSubject ss ON s.student_id = ss.student_id
+            JOIN Enrollment e ON s.student_id = e.student_id
+            WHERE ss.subject_id = %s
+              AND ss.status = 'active'
+              AND e.status = 'active'
+              AND e.days_remaining > 0
+            ORDER BY s.surname, s.name
+        """, (subject_id,))
+        students = cur.fetchall()
+    except Exception as e:
+        print(f"Error fetching attendance data: {e}")
+        flash("Failed to fetch data.", "danger")
+        return redirect('/admin/attendance-register')
+    finally:
+        cur.close()
+        conn.close()
+
+    if not students:
+        flash('No active students enrolled in this subject.', 'warning')
+        return redirect('/admin/attendance-register')
+
+    # Generate PDF
+    import io
+    from datetime import datetime
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=landscape(A4))
+    width, height = landscape(A4)
+
+    # Title
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(20*mm, height - 20*mm, "Attendance Register")
+    c.setFont("Helvetica", 10)
+    c.drawString(20*mm, height - 25*mm, f"Subject: {subject_name}")
+    c.drawString(20*mm, height - 30*mm, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+
+    # Table data – now with Phone instead of Student ID
+    data = [["#", "Phone", "Name", "Surname", "Email", "Signature"]]
+    for idx, student in enumerate(students, start=1):
+        data.append([
+            str(idx),
+            student['phone'] or 'N/A',
+            student['name'],
+            student['surname'],
+            student['email'],
+            ""
+        ])
+
+    # Table style (adjusted column widths: phone column similar to ID)
+    table = Table(data, colWidths=[15*mm, 35*mm, 35*mm, 40*mm, 60*mm, 30*mm])
+    table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+        ('BOX', (0, 0), (-1, -1), 0.5, colors.black),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.whitesmoke, colors.lightgrey]),
+    ]))
+
+    # Position table
+    table.wrapOn(c, width, height)
+    table.drawOn(c, 15*mm, height - 40*mm - (len(data)*6*mm))
+
+    c.save()
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name=f"attendance_{subject_name}_{datetime.now().strftime('%Y%m%d')}.pdf",
+        mimetype='application/pdf'
+    )
 # ===========================================================
 # MAIN EXECUTION
 # ===========================================================
